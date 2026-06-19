@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Sistema de Agenda · Financeiro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #f6f9fc 0%, #e9f0f5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .app-container {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 48px 48px 32px 32px;
+            box-shadow: 0 20px 40px rgba(0,20,30,0.2), 0 6px 12px rgba(0,0,0,0.05);
+            padding: 24px 28px 32px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        #loginSection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 10px;
+            gap: 24px;
+        }
+        #loginSection h1 {
+            font-weight: 600;
+            font-size: 2.2rem;
+            color: #0b2a3b;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        #loginSection h1 i { color: #2a7faa; }
+        .login-box {
+            background: white;
+            border-radius: 40px;
+            padding: 32px 28px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+        }
+        .login-box label {
+            font-weight: 500;
+            color: #1a3b4e;
+            display: block;
+            margin: 12px 0 4px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #dce6ec;
+            border-radius: 60px;
+            font-size: 1rem;
+            background: #f8fafc;
+            transition: 0.2s;
+        }
+        .login-box input:focus {
+            outline: none;
+            border-color: #2a7faa;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(42,127,170,0.15);
+        }
+        .login-btn {
+            width: 100%;
+            margin-top: 24px;
+            background: #1f5e7a;
+            border: none;
+            padding: 16px;
+            border-radius: 60px;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 16px rgba(26,75,99,0.25);
+        }
+        .login-btn:hover {
+            background: #134a63;
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(26,75,99,0.35);
+        }
+        .login-error {
+            color: #c93a3a;
+            background: #ffe6e6;
+            border-radius: 40px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            display: none;
+        }
+        #agendaSection {
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(12px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .header-dash {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 12px;
+        }
+        .header-dash h2 {
+            font-weight: 600;
+            color: #0b2a3b;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-dash h2 i { color: #2a7faa; }
+        .user-info {
+            background: white;
+            padding: 8px 22px 8px 18px;
+            border-radius: 60px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            color: #1a3b4e;
+            border: 1px solid #d0dfe9;
+        }
+        .user-info i { color: #2a7faa; font-size: 1.2rem; }
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: #6b8b9e;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 30px;
+            transition: 0.2s;
+        }
+        .logout-btn:hover { background: #e4edf3; color: #b53b3b; }
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        .btn-primary, .btn-finance, .btn-save-agenda {
+            background: white;
+            border: 1px solid #cbdde9;
+            padding: 12px 22px;
+            border-radius: 60px;
+            font-weight: 600;
+            color: #1a3b4e;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+            font-size: 0.95rem;
+        }
+        .btn-primary i, .btn-finance i, .btn-save-agenda i { color: #2a7faa; }
+        .btn-primary:hover, .btn-finance:hover, .btn-save-agenda:hover {
+            background: #e5f0f7;
+            border-color: #2a7faa;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 14px rgba(42,127,170,0.12);
+        }
+        .btn-finance i { color: #3b8c5e; }
+        .btn-finance:hover {
+            border-color: #3b8c5e;
+            background: #e2f3ea;
+        }
+        .btn-save-agenda i { color: #8b5e3b; }
+        .btn-save-agenda:hover {
+            border-color: #8b5e3b;
+            background: #f3ece2;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 28px;
+            padding: 16px 12px;
+            backdrop-filter: blur(4px);
+            margin-bottom: 20px;
+        }
+        .cal-header {
+            font-weight: 600;
+            color: #1f4b61;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .cal-day {
+            background: white;
+            border-radius: 20px;
+            padding: 10px 4px;
+            text-align: center;
+            font-weight: 500;
+            color: #1a3b4e;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            transition: 0.1s;
+            font-size: 0.9rem;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            border: 1px solid transparent;
+        }
+        .cal-day.has-event {
+            background: #d8ecfa;
+            border-color: #7bb3d1;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .cal-day .event-dot {
+            background: #1f5e7a;
+            width: 8px;
+            height: 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+        .cal-day .event-count {
+            font-size: 0.65rem;
+            background: #1f5e7a;
+            color: white;
+            padding: 0 8px;
+            border-radius: 30px;
+            margin-top: 3px;
+        }
+        .empty-day { color: #93adbd; }
+        .month-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 16px 0 10px;
+        }
+        .month-nav button {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: #1f5e7a;
+            cursor: pointer;
+            padding: 0 12px;
+            transition: 0.1s;
+        }
+        .month-nav button:hover { color: #0b2a3b; transform: scale(1.2); }
+        .month-nav span {
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: #0b2a3b;
+        }
+        .event-list {
+            background: white;
+            border-radius: 28px;
+            padding: 18px 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            margin-top: 6px;
+            border: 1px solid #dce8f0;
+        }
+        .event-list h4 {
+            color: #1a3b4e;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .event-item {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 6px;
+            border-bottom: 1px solid #edf3f8;
+            gap: 6px;
+        }
+        .event-item:last-child { border-bottom: none; }
+        .event-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            align-items: baseline;
+        }
+        .event-info strong { color: #0b2a3b; }
+        .event-pago {
+            background: #d2f0df;
+            color: #006b3e;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .event-pendente {
+            background: #ffe1d9;
+            color: #b14b2a;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .event-local { color: #3b6a81; }
+        .event-valor {
+            background: #eef4f8;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #0b2a3b;
+        }
+        .event-sede {
+            background: #e8f0fe;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1f5e7a;
+        }
+        .event-travel {
+            background: #fef3e8;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #b16d2a;
+        }
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,20,30,0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 20px;
+        }
+        .modal-card {
+            background: white;
+            max-width: 480px;
+            width: 100%;
+            border-radius: 48px;
+            padding: 30px 28px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            animation: fadeUp 0.25s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-card h3 {
+            font-weight: 600;
+            color: #0b2a3b;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .modal-card label {
+            font-weight: 500;
+            color: #1f4b61;
+            display: block;
+            margin: 14px 0 4px;
+        }
+        .modal-card input, .modal-card select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #dce6ec;
+            border-radius: 60px;
+            background: #fafcfd;
+            font-size: 0.95rem;
+        }
+        .modal-card input:focus {
+            border-color: #2a7faa;
+            outline: none;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 700;
+            background: #e4edf3;
+            color: #1a3b4e;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .modal-actions .btn-save {
+            background: #1f5e7a;
+            color: white;
+            box-shadow: 0 6px 12px rgba(26,75,99,0.25);
+        }
+        .modal-actions .btn-save:hover { background: #134a63; }
+        .modal-actions .btn-cancel { background: #f1f5f8; }
+        .modal-actions .btn-cancel:hover { background: #dce6ec; }
+        .financeiro-indicator {
+            margin-top: 8px;
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .small-badge {
+            background: #eef4f8;
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+        }
+        /* Painel Financeiro */
+        .finance-panel {
+            background: white;
+            border-radius: 28px;
+            padding: 20px 24px;
+            margin: 16px 0 20px;
+            border: 1px solid #dce8f0;
+            display: none;
+        }
+        .finance-panel.visible { display: block; }
+        .finance-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px 40px;
+            justify-content: space-around;
+            margin-bottom: 16px;
+        }
+        .finance-stat {
+            background: #f6fafd;
+            padding: 12px 24px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+        .finance-stat i { font-size: 1.4rem; }
+        .stat-receber i { color: #d97706; }
+        .stat-recebido i { color: #0f7b3a; }
+        .stat-valor { font-weight: 700; font-size: 1.2rem; }
+        .finance-detalhes {
+            border-top: 1px solid #e9f0f5;
+            padding-top: 14px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .finance-detalhes .item {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            padding: 8px 4px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #eef4f8;
+            align-items: center;
+            gap: 6px;
+        }
+        .item-status {
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 2px 12px;
+            border-radius: 40px;
+        }
+        .btn-toggle-pagamento {
+            background: #e4edf3;
+            border: none;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #1a3b4e;
+        }
+        .btn-toggle-pagamento:hover { background: #cbdde9; transform: scale(1.05); }
+        .btn-toggle-pagamento.pago { background: #d2f0df; color: #006b3e; }
+        .btn-toggle-pagamento.pendente { background: #ffe1d9; color: #b14b2a; }
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f5e7a;
+            color: white;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+        .col-data { font-weight: 600; color: #0b2a3b; min-width: 100px; }
+        .col-empresa { flex: 2; min-width: 120px; }
+        .col-valor { font-weight: 600; min-width: 80px; }
+        @media (max-width: 600px) {
+            .app-container { padding: 16px; }
+            .calendar-grid { gap: 4px; padding: 8px; }
+            .cal-day { min-height: 60px; padding: 6px 2px; font-size: 0.75rem; }
+            .finance-detalhes .item { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+
+    <!-- LOGIN -->
+    <div id="loginSection">
+        <h1><i class="fas fa-calendar-check"></i> Agenda+</h1>
+        <div class="login-box">
+            <label><i class="fas fa-user"></i> Usuário</label>
+            <input type="text" id="loginUser" value="admin" placeholder="ex: admin">
+            <label><i class="fas fa-lock"></i> Senha</label>
+            <input type="password" id="loginPass" value="123" placeholder="••••••">
+            <button class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+            <div class="login-error" id="loginError">Usuário ou senha inválidos</div>
+        </div>
+    </div>
+
+    <!-- AGENDA -->
+    <div id="agendaSection">
+        <div class="header-dash">
+            <h2><i class="fas fa-calendar-alt"></i> Minha Agenda</h2>
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i> <span id="displayUser">admin</span>
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn-primary" id="btnAgendar"><i class="fas fa-plus-circle"></i> Agendar Evento</button>
+            <button class="btn-finance" id="btnFinanceiro"><i class="fas fa-coins"></i> Financeiro</button>
+            <button class="btn-save-agenda" id="btnSalvarAgenda"><i class="fas fa-save"></i> Salvar Agenda</button>
+        </div>
+
+        <!-- Painel Financeiro -->
+        <div class="finance-panel" id="financePanel">
+            <div class="finance-stats">
+                <div class="finance-stat stat-receber"><i class="fas fa-clock"></i> A Receber <span class="stat-valor" id="totalReceber">R$ 0,00</span></div>
+                <div class="finance-stat stat-recebido"><i class="fas fa-check-circle"></i> Recebido <span class="stat-valor" id="totalRecebido">R$ 0,00</span></div>
+            </div>
+            <div class="finance-detalhes" id="financeDetalhes">
+                <div style="color:#7f9aaa; text-align:center; padding:8px;">Nenhum evento com valor definido</div>
+            </div>
+        </div>
+
+        <!-- Calendário -->
+        <div class="month-nav">
+            <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+            <span id="currentMonthLabel">Janeiro 2026</span>
+            <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+
+        <!-- Lista eventos do dia -->
+        <div class="event-list" id="eventListContainer">
+            <h4><i class="fas fa-list-ul"></i> Eventos do dia</h4>
+            <div id="dayEventList"><p style="color:#7f9aaa;">Selecione um dia com evento</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL AGENDAR -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card" id="modalCard">
+        <h3 id="modalTitle"><i class="fas fa-calendar-plus"></i> Agendar Evento</h3>
+        <form id="eventForm">
+            <label>Data</label>
+            <input type="date" id="evData" required>
+            <label>Hora início</label>
+            <input type="time" id="evHoraInicio" required>
+            <label>Hora fim</label>
+            <input type="time" id="evHoraFim" required>
+            <label>Hora check-in (sede)</label>
+            <input type="time" id="evHoraSede" required>
+            <label>Local do evento</label>
+            <input type="text" id="evLocal" placeholder="Ex: Hotel Central" required>
+            <label>Nome da empresa</label>
+            <input type="text" id="evEmpresa" placeholder="Empresa X" required>
+            <label>Valor do Cache (R$)</label>
+            <input type="number" id="evValor" placeholder="0,00" step="0.01" min="0" required>
+            <div class="financeiro-indicator">
+                <span class="small-badge"><i class="fas fa-credit-card"></i> Status financeiro</span>
+                <select id="evStatusPagamento" style="flex:1; padding: 8px 16px; border-radius: 40px; border: 2px solid #dce6ec;">
+                    <option value="Pago">✅ Pago</option>
+                    <option value="Pendente" selected>⏳ Pendente</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="modalCancel">Cancelar</button>
+                <button type="submit" class="btn-save" id="modalSave"><i class="fas fa-save"></i> Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-message" id="toastMessage">Agenda salva com sucesso!</div>
+
+<script>
+    (function() {
+        // ---------- ESTADO ----------
+        let currentUser = null;
+        let events = [];
+        let selectedDate = null;
+        let currentMonth = 0;
+        let currentYear = 2026;
+        let editingId = null;
+
+        // DOM
+        const loginSection = document.getElementById('loginSection');
+        const agendaSection = document.getElementById('agendaSection');
+        const loginUser = document.getElementById('loginUser');
+        const loginPass = document.getElementById('loginPass');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const displayUser = document.getElementById('displayUser');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const calendarGrid = document.getElementById('calendarGrid');
+        const currentMonthLabel = document.getElementById('currentMonthLabel');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        const dayEventList = document.getElementById('dayEventList');
+
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalTitle = document.getElementById('modalTitle');
+        const eventForm = document.getElementById('eventForm');
+        const evData = document.getElementById('evData');
+        const evHoraInicio = document.getElementById('evHoraInicio');
+        const evHoraFim = document.getElementById('evHoraFim');
+        const evHoraSede = document.getElementById('evHoraSede');
+        const evLocal = document.getElementById('evLocal');
+        const evEmpresa = document.getElementById('evEmpresa');
+        const evValor = document.getElementById('evValor');
+        const evStatusPagamento = document.getElementById('evStatusPagamento');
+        const modalCancel = document.getElementById('modalCancel');
+        const modalSave = document.getElementById('modalSave');
+
+        const btnAgendar = document.getElementById('btnAgendar');
+        const btnFinanceiro = document.getElementById('btnFinanceiro');
+        const btnSalvarAgenda = document.getElementById('btnSalvarAgenda');
+        const financePanel = document.getElementById('financePanel');
+        const totalReceber = document.getElementById('totalReceber');
+        const totalRecebido = document.getElementById('totalRecebido');
+        const financeDetalhes = document.getElementById('financeDetalhes');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // ---------- HELPERS ----------
+        function formatDateKey(year, month, day) {
+            return `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        }
+
+        function formatDateBR(dateKey) {
+            const parts = dateKey.split('-');
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        function getEventsForDate(dateKey) {
+            return events.filter(e => e.data === dateKey).sort((a,b) => a.horaInicio.localeCompare(b.horaInicio));
+        }
+
+        function formatCurrency(value) {
+            return 'R$ ' + value.toFixed(2).replace('.', ',');
+        }
+
+        function showToast(msg) {
+            toastMessage.textContent = msg || 'Operação realizada!';
+            toastMessage.style.display = 'block';
+            setTimeout(() => {
+                toastMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        function calcularTempoDeslocamento(horaFim, horaSedeProximo) {
+            if (!horaFim || !horaSedeProximo) return null;
+            const [hfH, hfM] = horaFim.split(':').map(Number);
+            const [hsH, hsM] = horaSedeProximo.split(':').map(Number);
+            const fimMin = hfH * 60 + hfM;
+            const sedeMin = hsH * 60 + hsM;
+            let diff = sedeMin - fimMin;
+            if (diff < 0) diff += 1440;
+            if (diff === 0) return '0 min';
+            const horas = Math.floor(diff / 60);
+            const minutos = diff % 60;
+            if (horas > 0) return `${horas}h ${minutos}min`;
+            return `${minutos}min`;
+        }
+
+        function atualizarFinanceiro() {
+            let totalPendente = 0, totalPago = 0;
+            let detalhesHtml = '';
+            const eventosOrdenados = [...events].filter(e => e.valor !== undefined && e.valor !== null && e.valor > 0)
+                .sort((a,b) => a.data.localeCompare(b.data) || a.horaInicio.localeCompare(b.horaInicio));
+            
+            if (eventosOrdenados.length === 0) {
+                detalhesHtml = '<div style="color:#7f9aaa; text-align:center; padding:8px;">Nenhum evento com valor definido</div>';
+            } else {
+                eventosOrdenados.forEach(ev => {
+                    const valorNum = parseFloat(ev.valor) || 0;
+                    if (ev.statusPagamento === 'Pago') totalPago += valorNum;
+                    else totalPendente += valorNum;
+                    const statusClass = ev.statusPagamento === 'Pago' ? 'event-pago' : 'event-pendente';
+                    const statusText = ev.statusPagamento === 'Pago' ? '✅ Pago' : '⏳ Pendente';
+                    const btnClass = ev.statusPagamento === 'Pago' ? 'pago' : 'pendente';
+                    detalhesHtml += `<div class="item">
+                        <span class="col-data"><i class="far fa-calendar-alt"></i> ${formatDateBR(ev.data)}</span>
+                        <span class="col-empresa"><strong>${ev.empresa}</strong> <span style="color:#6b8b9e;font-size:0.8rem;">${ev.local}</span></span>
+                        <span class="col-valor">${formatCurrency(valorNum)}</span>
+                        <span><span class="item-status ${statusClass}">${statusText}</span></span>
+                        <button class="btn-toggle-pagamento ${btnClass}" data-id="${ev.id}">
+                            <i class="fas ${ev.statusPagamento === 'Pago' ? 'fa-check-circle' : 'fa-clock'}"></i> 
+                            ${ev.statusPagamento === 'Pago' ? 'Marcar Pendente' : 'Marcar Pago'}
+                        </button>
+                    </div>`;
+                });
+            }
+            totalReceber.textContent = formatCurrency(totalPendente);
+            totalRecebido.textContent = formatCurrency(totalPago);
+            financeDetalhes.innerHTML = detalhesHtml;
+
+            // Event listeners para botões de toggle
+            document.querySelectorAll('.btn-toggle-pagamento').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    const ev = events.find(e => e.id === id);
+                    if (ev) {
+                        ev.statusPagamento = ev.statusPagamento === 'Pago' ? 'Pendente' : 'Pago';
+                        atualizarFinanceiro();
+                        renderCalendar();
+                        if (selectedDate) renderDayEvents(selectedDate);
+                        showToast(`Status alterado para ${ev.statusPagamento}`);
+                    }
+                });
+            });
+        }
+
+        function renderCalendar() {
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const today = new Date();
+            const todayStr = formatDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+
+            let html = '';
+            const weekDays = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+            weekDays.forEach(d => html += `<div class="cal-header">${d}</div>`);
+
+            for (let i = 0; i < firstDay; i++) {
+                html += `<div class="cal-day empty-day"></div>`;
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateKey = formatDateKey(currentYear, currentMonth, d);
+                const dayEvents = getEventsForDate(dateKey);
+                const hasEvent = dayEvents.length > 0;
+                const isToday = (dateKey === todayStr);
+                let classes = 'cal-day';
+                if (hasEvent) classes += ' has-event';
+                if (isToday) classes += ' today-border';
+
+                html += `<div class="${classes}" data-date="${dateKey}">
+                            ${d}
+                            ${hasEvent ? `<span class="event-dot"></span><span class="event-count">${dayEvents.length}</span>` : ''}
+                        </div>`;
+            }
+            calendarGrid.innerHTML = html;
+
+            const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+            currentMonthLabel.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+            document.querySelectorAll('.cal-day[data-date]').forEach(el => {
+                el.addEventListener('click', function(e) {
+                    const dateKey = this.dataset.date;
+                    selectedDate = dateKey;
+                    renderDayEvents(dateKey);
+                });
+            });
+
+            if (selectedDate) {
+                renderDayEvents(selectedDate);
+            } else {
+                const firstEvent = events.length ? events[0] : null;
+                if (firstEvent) {
+                    selectedDate = firstEvent.data;
+                    renderDayEvents(selectedDate);
+                } else {
+                    dayEventList.innerHTML = `<p style="color:#7f9aaa;">Nenhum evento cadastrado</p>`;
+                }
+            }
+            atualizarFinanceiro();
+        }
+
+        function renderDayEvents(dateKey) {
+            const list = getEventsForDate(dateKey);
+            if (list.length === 0) {
+                dayEventList.innerHTML = `<p style="color:#7f9aaa;">Nenhum evento neste dia</p>`;
+                return;
+            }
+            let html = '';
+            list.forEach((ev, index) => {
+                const statusClass = ev.statusPagamento === 'Pago' ? 'event-pago' : 'event-pendente';
+                const valorStr = ev.valor ? formatCurrency(parseFloat(ev.valor)) : 'R$ 0,00';
+                
+                // Calcular tempo de deslocamento do evento anterior para este
+                let travelInfo = '';
+                if (index > 0) {
+                    const prev = list[index - 1];
+                    const travelTime = calcularTempoDeslocamento(prev.horaFim, ev.horaSede);
+                    if (travelTime) {
+                        travelInfo = `<span class="event-travel"><i class="fas fa-arrow-right"></i> Deslocamento: ${travelTime}</span>`;
+                    }
+                }
+                
+                html += `<div class="event-item" data-id="${ev.id}">
+                            <div class="event-info">
+                                <strong>${ev.empresa}</strong>
+                                <span>${ev.horaInicio} - ${ev.horaFim}</span>
+                                <span class="event-sede"><i class="fas fa-home"></i> Sede: ${ev.horaSede}</span>
+                                <span class="event-local"><i class="fas fa-map-pin"></i> ${ev.local}</span>
+                                <span class="event-valor">${valorStr}</span>
+                                <span class="${statusClass}">${ev.statusPagamento}</span>
+                                ${travelInfo}
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="edit-event" data-id="${ev.id}" style="background:transparent; border:none; color:#2a7faa; cursor:pointer;"><i class="fas fa-edit"></i></button>
+                                <button class="delete-event" data-id="${ev.id}" style="background:transparent; border:none; color:#b34a4a; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </div>`;
+            });
+            dayEventList.innerHTML = html;
+
+            document.querySelectorAll('.edit-event').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const id = parseInt(this.dataset.id);
+                    const ev = events.find(e => e.id === id);
+                    if (ev) openModalForEdit(ev);
+                });
+            });
+            document.querySelectorAll('.delete-event').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const id = parseInt(this.dataset.id);
+                    if (confirm('Remover este evento?')) {
+                        events = events.filter(e => e.id !== id);
+                        renderCalendar();
+                        if (selectedDate) renderDayEvents(selectedDate);
+                        else renderCalendar();
+                    }
+                });
+            });
+        }
+
+        // ---------- SALVAR AGENDA (JSON) ----------
+        function salvarAgenda() {
+            if (events.length === 0) {
+                showToast('Nenhum evento para salvar');
+                return;
+            }
+            const dataStr = JSON.stringify(events, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const now = new Date();
+            const dataFormatada = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            a.download = `agenda_${dataFormatada}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Agenda salva com sucesso!');
+        }
+
+        // ---------- MODAL ----------
+        function openModalForEdit(ev) {
+            modalTitle.innerHTML = `<i class="fas fa-edit"></i> Editar Evento`;
+            evData.value = ev.data;
+            evHoraInicio.value = ev.horaInicio;
+            evHoraFim.value = ev.horaFim;
+            evHoraSede.value = ev.horaSede;
+            evLocal.value = ev.local;
+            evEmpresa.value = ev.empresa;
+            evValor.value = ev.valor || '';
+            evStatusPagamento.value = ev.statusPagamento;
+            editingId = ev.id;
+            modalOverlay.style.display = 'flex';
+        }
+
+        function openModalForNew() {
+            modalTitle.innerHTML = `<i class="fas fa-calendar-plus"></i> Agendar Evento`;
+            const today = new Date();
+            evData.value = formatDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+            evHoraInicio.value = '09:00';
+            evHoraFim.value = '10:00';
+            evHoraSede.value = '08:30';
+            evLocal.value = '';
+            evEmpresa.value = '';
+            evValor.value = '';
+            evStatusPagamento.value = 'Pendente';
+            editingId = null;
+            modalOverlay.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+        }
+
+        // ---------- SALVAR EVENTO ----------
+        function saveEventFromForm() {
+            const data = evData.value;
+            const horaInicio = evHoraInicio.value;
+            const horaFim = evHoraFim.value;
+            const horaSede = evHoraSede.value;
+            const local = evLocal.value.trim();
+            const empresa = evEmpresa.value.trim();
+            const valor = parseFloat(evValor.value.replace(',', '.')) || 0;
+            const statusPagamento = evStatusPagamento.value;
+
+            if (!data || !horaInicio || !horaFim || !horaSede || !local || !empresa) {
+                alert('Preencha todos os campos.');
+                return;
+            }
+
+            if (editingId !== null) {
+                const index = events.findIndex(e => e.id === editingId);
+                if (index !== -1) {
+                    events[index] = { ...events[index], data, horaInicio, horaFim, horaSede, local, empresa, valor, statusPagamento };
+                }
+            } else {
+                const newId = events.length ? Math.max(...events.map(e=>e.id)) + 1 : 1;
+                events.push({
+                    id: newId,
+                    data,
+                    horaInicio,
+                    horaFim,
+                    horaSede,
+                    local,
+                    empresa,
+                    valor,
+                    statusPagamento
+                });
+            }
+            closeModal();
+            renderCalendar();
+            if (selectedDate) renderDayEvents(selectedDate);
+            else if (events.length) renderDayEvents(events[0].data);
+            atualizarFinanceiro();
+        }
+
+        // ---------- LOGIN ----------
+        function doLogin() {
+            const user = loginUser.value.trim();
+            const pass = loginPass.value.trim();
+            if (user === 'admin' && pass === '123') {
+                currentUser = user;
+                loginError.style.display = 'none';
+                loginSection.style.display = 'none';
+                agendaSection.style.display = 'block';
+                displayUser.textContent = user;
+                if (events.length === 0) {
+                    const hoje = new Date();
+                    const y = hoje.getFullYear(), m = hoje.getMonth(), d = hoje.getDate();
+                    const dataEx = formatDateKey(y, m, d);
+                    events.push({ id: 1, data: dataEx, horaInicio: '10:00', horaFim: '11:30', horaSede: '09:30', local: 'Escritório Central', empresa: 'TechCorp', valor: 350.00, statusPagamento: 'Pago' });
+                    const amanha = new Date(y, m, d+1);
+                    const dataEx2 = formatDateKey(amanha.getFullYear(), amanha.getMonth(), amanha.getDate());
+                    events.push({ id: 2, data: dataEx2, horaInicio: '14:00', horaFim: '16:00', horaSede: '13:30', local: 'Hotel Plaza', empresa: 'Inovação Ltda', valor: 520.50, statusPagamento: 'Pendente' });
+                    const depois = new Date(y, m, d+2);
+                    const dataEx3 = formatDateKey(depois.getFullYear(), depois.getMonth(), depois.getDate());
+                    events.push({ id: 3, data: dataEx3, horaInicio: '08:00', horaFim: '09:00', horaSede: '07:30', local: 'Centro de Convenções', empresa: 'Global Solutions', valor: 780.00, statusPagamento: 'Pendente' });
+                    // Mesmo dia com múltiplos eventos para testar deslocamento
+                    const hoje2 = new Date(y, m, d);
+                    const dataHoje = formatDateKey(hoje2.getFullYear(), hoje2.getMonth(), hoje2.getDate());
+                    events.push({ id: 4, data: dataHoje, horaInicio: '14:00', horaFim: '15:30', horaSede: '13:30', local: 'Auditório Sul', empresa: 'DataFlow', valor: 420.00, statusPagamento: 'Pendente' });
+                    events.push({ id: 5, data: dataHoje, horaInicio: '16:00', horaFim: '17:30', horaSede: '15:30', local: 'Torre Norte', empresa: 'CloudNine', valor: 610.00, statusPagamento: 'Pago' });
+                }
+                renderCalendar();
+                if (events.length) {
+                    selectedDate = events[0].data;
+                    renderDayEvents(selectedDate);
+                }
+                financePanel.classList.remove('visible');
+                atualizarFinanceiro();
+            } else {
+                loginError.style.display = 'block';
+            }
+        }
+
+        // ---------- EVENT LISTENERS ----------
+        loginBtn.addEventListener('click', doLogin);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && loginSection.style.display !== 'none') doLogin(); });
+
+        logoutBtn.addEventListener('click', function() {
+            currentUser = null;
+            agendaSection.style.display = 'none';
+            loginSection.style.display = 'flex';
+            loginError.style.display = 'none';
+            loginUser.value = 'admin';
+            loginPass.value = '123';
+            financePanel.classList.remove('visible');
+        });
+
+        prevMonthBtn.addEventListener('click', function() {
+            if (currentMonth === 0) { currentMonth = 11; currentYear--; } else currentMonth--;
+            renderCalendar();
+        });
+        nextMonthBtn.addEventListener('click', function() {
+            if (currentMonth === 11) { currentMonth = 0; currentYear++; } else currentMonth++;
+            renderCalendar();
+        });
+
+        btnAgendar.addEventListener('click', openModalForNew);
+
+        btnFinanceiro.addEventListener('click', function() {
+            financePanel.classList.toggle('visible');
+            if (financePanel.classList.contains('visible')) {
+                atualizarFinanceiro();
+            }
+        });
+
+        btnSalvarAgenda.addEventListener('click', salvarAgenda);
+
+        modalCancel.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', function(e) { if (e.target === modalOverlay) closeModal(); });
+
+        eventForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveEventFromForm();
+        });
+
+        // inicialização
+        loginSection.style.display = 'flex';
+        agendaSection.style.display = 'none';
+        const now = new Date();
+        currentYear = now.getFullYear();
+        currentMonth = now.getMonth();
+        financePanel.classList.remove('visible');
+    })();
+</script>
+</body>
+</html>
