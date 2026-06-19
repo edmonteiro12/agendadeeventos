@@ -1453,6 +1453,372 @@
         currentMonth = now.getMonth();
         financePanel.classList.remove('visible');
     })();
+    // ===== NOVA FUNÇÃO: Sincronização em Nuvem =====
+// Adicione esta função após a função salvarEventos()
+
+// Configuração - Substitua com seus dados
+const SYNC_CONFIG = {
+    // Opção 1: JSONBin.io (gratuito - cadastre-se em jsonbin.io)
+    useJsonBin: true,
+    jsonBinKey: '$2a$10$YOUR_BIN_KEY_HERE', // Sua chave da API
+    binId: 'YOUR_BIN_ID', // ID do seu bin
+    
+    // Opção 2: WebDAV (Nextcloud, ownCloud, etc)
+    useWebDAV: false,
+    webdavUrl: 'https://seu-servidor.com/remote.php/dav/files/usuario/agenda.json',
+    webdavUser: 'usuario',
+    webdavPass: 'senha'
+};
+
+// Sincronizar com a nuvem
+async function sincronizarNuvem() {
+    try {
+        showToast('🔄 Sincronizando...');
+        
+        // Primeiro, tentar buscar dados da nuvem
+        const dadosNuvem = await buscarDadosNuvem();
+        
+        if (dadosNuvem) {
+            // Verificar se há dados novos na nuvem
+            const eventosNuvem = dadosNuvem.events || [];
+            const nextIdNuvem = dadosNuvem.nextId || 1;
+            
+            // Comparar versões (usando timestamp)
+            const versaoLocal = localStorage.getItem('agenda_version') || '0';
+            const versaoNuvem = dadosNuvem.version || '0';
+            
+            if (versaoNuvem !== versaoLocal) {
+                // Há atualizações na nuvem
+                if (confirm('📥 Há atualizações na nuvem. Deseja baixar os dados mais recentes?\n\nClique em "OK" para baixar (perderá alterações locais não salvas) ou "Cancelar" para manter local.')) {
+                    // Baixar da nuvem
+                    events = eventosNuvem;
+                    nextId = nextIdNuvem;
+                    localStorage.setItem('agenda_events', JSON.stringify(events));
+                    localStorage.setItem('agenda_nextId', String(nextId));
+                    localStorage.setItem('agenda_version', versaoNuvem);
+                    showToast('✅ Dados baixados da nuvem!');
+                    renderCalendar();
+                    if (selectedDate) renderDayEvents(selectedDate);
+                    atualizarFinanceiro();
+                } else {
+                    // Enviar dados locais para nuvem
+                    await enviarDadosNuvem();
+                }
+            } else {
+                // Versões iguais, apenas verificar se precisa enviar
+                showToast('✅ Já está sincronizado!');
+            }
+        } else {
+            // Não há dados na nuvem, enviar os locais
+            await enviarDadosNuvem();
+        }
+    } catch (error) {
+        console.error('Erro na sincronização:', error);
+        showToast('⚠️ Erro ao sincronizar. Tente novamente.');
+    }
+}
+
+// Buscar dados da nuvem
+async function buscarDadosNuvem() {
+    try {
+        if (SYNC_CONFIG.useJsonBin) {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${SYNC_CONFIG.binId}/latest`, {
+                headers: {
+                    'X-Master-Key': SYNC_CONFIG.jsonBinKey
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                return data.record;
+            }
+        }
+        
+        if (SYNC_CONFIG.useWebDAV) {
+            const response = await fetch(SYNC_CONFIG.webdavUrl, {
+                headers: {
+                    'Authorization': 'Basic ' + btoa(SYNC_CONFIG.webdavUser + ':' + SYNC_CONFIG.webdavPass)
+                }
+            });
+            if (response.ok) {
+                return await response.json();
+            }
+        }
+        
+        return null;
+    } catch (error) {
+        console.warn('Erro ao buscar dados da nuvem:', error);
+        return null;
+    }
+}
+
+// Enviar dados para nuvem
+async function enviarDadosNuvem() {
+    try {
+        const version = Date.now().toString();
+        const dados = {
+            events: events,
+            nextId: nextId,
+            version: version,
+            updatedAt: new Date().toISOString()
+        };
+        
+        if (SYNC_CONFIG.useJsonBin) {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${SYNC_CONFIG.binId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': SYNC_CONFIG.jsonBinKey
+                },
+                body: JSON.stringify(dados)
+            });
+            if (response.ok) {
+                localStorage.setItem('agenda_version', version);
+                showToast('✅ Dados enviados para a nuvem!');
+                return true;
+            }
+        }
+        
+        if (SYNC_CONFIG.useWebDAV) {
+            const response = await fetch(SYNC_CONFIG.webdavUrl, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Basic ' + btoa(SYNC_CONFIG.webdavUser + ':' + SYNC_CONFIG.webdavPass)
+                },
+                body: JSON.stringify(dados)
+            });
+            if (response.ok) {
+                localStorage.setItem('agenda_version', version);
+                showToast('✅ Dados enviados para a nuvem!');
+                return true;
+            }
+        }
+        
+        showToast('⚠️ Não foi possível enviar para a nuvem. Verifique a configuração.');
+        return false;
+    } catch (error) {
+        console.error('Erro ao enviar dados:', error);
+        showToast('⚠️ Erro ao enviar para nuvem.');
+        return false;
+    }
+}
+
+// Sincronização entre abas (BroadcastChannel)
+let syncChannel = null;
+
+function iniciarSincronizacaoAbas() {
+    try {
+        syncChannel = new BroadcastChannel('agenda_sync');
+        syncChannel.onmessage = function(event) {
+            if (event.data.type === 'update') {
+                // Outra aba atualizou os dados
+                carregarEventos();
+                renderCalendar();
+                if (selectedDate) renderDayEvents(selectedDate);
+                atualizarFinanceiro();
+                showToast('🔄 Dados atualizados de outra aba!');
+            }
+        };
+    } catch (e) {
+        // BroadcastChannel não suportado
+        console.warn('BroadcastChannel não suportado');
+    }
+}
+
+// Modificar a função salvarEventos para notificar outras abas
+const salvarEventosOriginal = salvarEventos;
+salvarEventos = function() {
+    salvarEventosOriginal();
+    // Notificar outras abas
+    try {
+        if (syncChannel) {
+            syncChannel.postMessage({ type: 'update' });
+        }
+    } catch (e) {}
+};
+
+// ===== NOVO BOTÃO DE SINCRONIZAÇÃO =====
+// Adicione este botão na action-bar (após o botão PDF)
+
+// Botão de sincronização
+const btnSync = document.createElement('button');
+btnSync.className = 'btn-sync';
+btnSync.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Sincronizar';
+btnSync.style.cssText = `
+    background: white;
+    border: 1px solid #cbdde9;
+    padding: 12px 22px;
+    border-radius: 60px;
+    font-weight: 600;
+    color: #1a3b4e;
+    cursor: pointer;
+    transition: 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+    font-size: 0.95rem;
+`;
+btnSync.querySelector('i').style.color = '#8b5e3b';
+btnSync.onmouseover = function() {
+    this.style.background = '#e5f0f7';
+    this.style.borderColor = '#2a7faa';
+};
+btnSync.onmouseout = function() {
+    this.style.background = 'white';
+    this.style.borderColor = '#cbdde9';
+};
+btnSync.onclick = sincronizarNuvem;
+
+// Adicionar o botão após o botão PDF
+const actionBar = document.querySelector('.action-bar');
+const btnPDFElement = document.getElementById('btnPDF');
+if (actionBar && btnPDFElement) {
+    btnPDFElement.parentNode.insertBefore(btnSync, btnPDFElement.nextSibling);
+}
+
+// Sincronizar automaticamente ao iniciar
+document.addEventListener('DOMContentLoaded', function() {
+    iniciarSincronizacaoAbas();
+    
+    // Tentar sincronizar após 2 segundos
+    setTimeout(() => {
+        if (events.length > 0) {
+            sincronizarNuvem();
+        }
+    }, 2000);
+});
+
+// Sincronizar a cada 5 minutos
+setInterval(() => {
+    if (events.length > 0) {
+        sincronizarNuvem();
+    }
+}, 300000);
+
+// ===== FUNÇÃO PARA EXPORTAR/IMPORTAR MANUAL (BACKUP) =====
+// Adicionar função para backup manual
+
+function exportarBackup() {
+    const dados = {
+        events: events,
+        nextId: nextId,
+        version: Date.now().toString(),
+        exportadoEm: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_agenda_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('✅ Backup exportado com sucesso!');
+}
+
+function importarBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const dados = JSON.parse(e.target.result);
+            if (dados.events && Array.isArray(dados.events)) {
+                if (confirm(`📥 Importar ${dados.events.length} eventos?`)) {
+                    events = dados.events;
+                    nextId = dados.nextId || events.length + 1;
+                    salvarEventos();
+                    renderCalendar();
+                    if (selectedDate) renderDayEvents(selectedDate);
+                    atualizarFinanceiro();
+                    showToast('✅ Backup importado com sucesso!');
+                }
+            } else {
+                showToast('⚠️ Arquivo inválido');
+            }
+        } catch (error) {
+            showToast('⚠️ Erro ao importar backup');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+// Adicionar botões de backup na action-bar
+const btnBackup = document.createElement('button');
+btnBackup.className = 'btn-backup';
+btnBackup.innerHTML = '<i class="fas fa-download"></i> Backup';
+btnBackup.style.cssText = `
+    background: white;
+    border: 1px solid #cbdde9;
+    padding: 12px 22px;
+    border-radius: 60px;
+    font-weight: 600;
+    color: #1a3b4e;
+    cursor: pointer;
+    transition: 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+    font-size: 0.95rem;
+`;
+btnBackup.querySelector('i').style.color = '#6b8b9e';
+btnBackup.onmouseover = function() {
+    this.style.background = '#e5f0f7';
+    this.style.borderColor = '#6b8b9e';
+};
+btnBackup.onmouseout = function() {
+    this.style.background = 'white';
+    this.style.borderColor = '#cbdde9';
+};
+btnBackup.onclick = exportarBackup;
+
+// Botão de restaurar
+const btnRestore = document.createElement('button');
+btnRestore.className = 'btn-restore';
+btnRestore.innerHTML = '<i class="fas fa-upload"></i> Restaurar';
+btnRestore.style.cssText = `
+    background: white;
+    border: 1px solid #cbdde9;
+    padding: 12px 22px;
+    border-radius: 60px;
+    font-weight: 600;
+    color: #1a3b4e;
+    cursor: pointer;
+    transition: 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+    font-size: 0.95rem;
+`;
+btnRestore.querySelector('i').style.color = '#b16d2a';
+btnRestore.onmouseover = function() {
+    this.style.background = '#e5f0f7';
+    this.style.borderColor = '#b16d2a';
+};
+btnRestore.onmouseout = function() {
+    this.style.background = 'white';
+    this.style.borderColor = '#cbdde9';
+};
+btnRestore.onclick = function() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = importarBackup;
+    input.click();
+};
+
+// Adicionar botões após o botão Sync
+if (actionBar && btnSync) {
+    btnSync.parentNode.insertBefore(btnBackup, btnSync.nextSibling);
+    btnBackup.parentNode.insertBefore(btnRestore, btnBackup.nextSibling);
+}
+
 </script>
 </body>
 </html>
