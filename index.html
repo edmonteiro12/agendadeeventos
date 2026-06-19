@@ -1,3 +1,5 @@
+[file name]: index.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -5,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Sistema de Agenda · Financeiro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         * {
             margin: 0;
@@ -162,7 +165,7 @@
             gap: 12px;
             margin-bottom: 28px;
         }
-        .btn-primary, .btn-finance, .btn-save-agenda {
+        .btn-primary, .btn-finance, .btn-save-agenda, .btn-pdf {
             background: white;
             border: 1px solid #cbdde9;
             padding: 12px 22px;
@@ -177,8 +180,8 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.02);
             font-size: 0.95rem;
         }
-        .btn-primary i, .btn-finance i, .btn-save-agenda i { color: #2a7faa; }
-        .btn-primary:hover, .btn-finance:hover, .btn-save-agenda:hover {
+        .btn-primary i, .btn-finance i, .btn-save-agenda i, .btn-pdf i { color: #2a7faa; }
+        .btn-primary:hover, .btn-finance:hover, .btn-save-agenda:hover, .btn-pdf:hover {
             background: #e5f0f7;
             border-color: #2a7faa;
             transform: translateY(-2px);
@@ -193,6 +196,11 @@
         .btn-save-agenda:hover {
             border-color: #8b5e3b;
             background: #f3ece2;
+        }
+        .btn-pdf i { color: #c0392b; }
+        .btn-pdf:hover {
+            border-color: #c0392b;
+            background: #fde8e5;
         }
         .calendar-grid {
             display: grid;
@@ -397,6 +405,38 @@
             border-color: #2a7faa;
             outline: none;
         }
+        .suggestions-container {
+            position: relative;
+        }
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #dce6ec;
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+        .suggestions-list.active {
+            display: block;
+        }
+        .suggestions-list div {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: 0.1s;
+            border-bottom: 1px solid #f0f4f8;
+        }
+        .suggestions-list div:hover {
+            background: #e5f0f7;
+        }
+        .suggestions-list div:last-child {
+            border-bottom: none;
+        }
         .modal-actions {
             display: flex;
             gap: 12px;
@@ -465,6 +505,50 @@
         .stat-receber i { color: #d97706; }
         .stat-recebido i { color: #0f7b3a; }
         .stat-valor { font-weight: 700; font-size: 1.2rem; }
+        
+        /* Tabela Mensal */
+        .monthly-table {
+            margin: 16px 0 20px;
+            border: 1px solid #e9f0f5;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .monthly-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .monthly-table th {
+            background: #f6fafd;
+            color: #1a3b4e;
+            font-weight: 600;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 2px solid #dce8f0;
+        }
+        .monthly-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #eef4f8;
+        }
+        .monthly-table tr:last-child td {
+            border-bottom: none;
+        }
+        .monthly-table .total-row {
+            background: #f6fafd;
+            font-weight: 700;
+        }
+        .monthly-table .total-row td {
+            border-top: 2px solid #dce8f0;
+        }
+        .monthly-table .month-name {
+            font-weight: 600;
+            color: #0b2a3b;
+        }
+        .monthly-table .month-total {
+            font-weight: 700;
+            color: #1f5e7a;
+        }
+        
         .finance-detalhes {
             border-top: 1px solid #e9f0f5;
             padding-top: 14px;
@@ -519,11 +603,42 @@
         .col-data { font-weight: 600; color: #0b2a3b; min-width: 100px; }
         .col-empresa { flex: 2; min-width: 120px; }
         .col-valor { font-weight: 600; min-width: 80px; }
+        
+        /* PDF Content */
+        #pdfContent {
+            display: none;
+            background: white;
+            padding: 40px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        #pdfContent h1 {
+            color: #0b2a3b;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        #pdfContent table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        #pdfContent th {
+            background: #f0f4f8;
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #dce8f0;
+        }
+        #pdfContent td {
+            padding: 8px 10px;
+            border: 1px solid #dce8f0;
+        }
+        
         @media (max-width: 600px) {
             .app-container { padding: 16px; }
             .calendar-grid { gap: 4px; padding: 8px; }
             .cal-day { min-height: 60px; padding: 6px 2px; font-size: 0.75rem; }
             .finance-detalhes .item { flex-direction: column; align-items: flex-start; }
+            .monthly-table { font-size: 0.75rem; }
+            .monthly-table th, .monthly-table td { padding: 6px 8px; }
         }
     </style>
 </head>
@@ -558,6 +673,7 @@
             <button class="btn-primary" id="btnAgendar"><i class="fas fa-plus-circle"></i> Agendar Evento</button>
             <button class="btn-finance" id="btnFinanceiro"><i class="fas fa-coins"></i> Financeiro</button>
             <button class="btn-save-agenda" id="btnSalvarAgenda"><i class="fas fa-save"></i> Salvar Agenda</button>
+            <button class="btn-pdf" id="btnPDF"><i class="fas fa-file-pdf"></i> PDF</button>
         </div>
 
         <!-- Painel Financeiro -->
@@ -566,6 +682,23 @@
                 <div class="finance-stat stat-receber"><i class="fas fa-clock"></i> A Receber <span class="stat-valor" id="totalReceber">R$ 0,00</span></div>
                 <div class="finance-stat stat-recebido"><i class="fas fa-check-circle"></i> Recebido <span class="stat-valor" id="totalRecebido">R$ 0,00</span></div>
             </div>
+            
+            <!-- Tabela Mensal -->
+            <div class="monthly-table" id="monthlyTable">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mês/Ano</th>
+                            <th>Total Pago</th>
+                            <th>Total Pendente</th>
+                            <th>Total Geral</th>
+                        </tr>
+                    </thead>
+                    <tbody id="monthlyTableBody">
+                    </tbody>
+                </table>
+            </div>
+            
             <div class="finance-detalhes" id="financeDetalhes">
                 <div style="color:#7f9aaa; text-align:center; padding:8px;">Nenhum evento com valor definido</div>
             </div>
@@ -601,9 +734,15 @@
             <label>Hora check-in (sede)</label>
             <input type="time" id="evHoraSede" required>
             <label>Local do evento</label>
-            <input type="text" id="evLocal" placeholder="Ex: Hotel Central" required>
+            <div class="suggestions-container">
+                <input type="text" id="evLocal" placeholder="Ex: Hotel Central" required autocomplete="off">
+                <div class="suggestions-list" id="localSuggestions"></div>
+            </div>
             <label>Nome da empresa</label>
-            <input type="text" id="evEmpresa" placeholder="Empresa X" required>
+            <div class="suggestions-container">
+                <input type="text" id="evEmpresa" placeholder="Empresa X" required autocomplete="off">
+                <div class="suggestions-list" id="empresaSuggestions"></div>
+            </div>
             <label>Valor do Cache (R$)</label>
             <input type="number" id="evValor" placeholder="0,00" step="0.01" min="0" required>
             <div class="financeiro-indicator">
@@ -624,6 +763,30 @@
 <!-- Toast -->
 <div class="toast-message" id="toastMessage">Agenda salva com sucesso!</div>
 
+<!-- PDF Content (hidden) -->
+<div id="pdfContent">
+    <h1>📋 Relatório de Agenda e Financeiro</h1>
+    <p><strong>Data de emissão:</strong> <span id="pdfDate"></span></p>
+    <hr>
+    <h3>Eventos Agendados</h3>
+    <table id="pdfTable">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Empresa</th>
+                <th>Local</th>
+                <th>Horário</th>
+                <th>Valor</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="pdfTableBody">
+        </tbody>
+    </table>
+    <hr>
+    <div id="pdfSummary"></div>
+</div>
+
 <script>
     (function() {
         // ---------- ESTADO ----------
@@ -633,6 +796,7 @@
         let currentMonth = 0;
         let currentYear = 2026;
         let editingId = null;
+        let nextId = 1;
 
         // DOM
         const loginSection = document.getElementById('loginSection');
@@ -663,13 +827,18 @@
         const modalCancel = document.getElementById('modalCancel');
         const modalSave = document.getElementById('modalSave');
 
+        const localSuggestions = document.getElementById('localSuggestions');
+        const empresaSuggestions = document.getElementById('empresaSuggestions');
+
         const btnAgendar = document.getElementById('btnAgendar');
         const btnFinanceiro = document.getElementById('btnFinanceiro');
         const btnSalvarAgenda = document.getElementById('btnSalvarAgenda');
+        const btnPDF = document.getElementById('btnPDF');
         const financePanel = document.getElementById('financePanel');
         const totalReceber = document.getElementById('totalReceber');
         const totalRecebido = document.getElementById('totalRecebido');
         const financeDetalhes = document.getElementById('financeDetalhes');
+        const monthlyTableBody = document.getElementById('monthlyTableBody');
         const toastMessage = document.getElementById('toastMessage');
 
         // ---------- HELPERS ----------
@@ -680,6 +849,12 @@
         function formatDateBR(dateKey) {
             const parts = dateKey.split('-');
             return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        function formatDateBRComplete(dateKey) {
+            const parts = dateKey.split('-');
+            const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+            return `${parseInt(parts[2])} de ${meses[parseInt(parts[1])-1]} de ${parts[0]}`;
         }
 
         function getEventsForDate(dateKey) {
@@ -698,6 +873,111 @@
             }, 3000);
         }
 
+        function getUniqueValues(field) {
+            const values = events.map(e => e[field]).filter(v => v && v.trim() !== '');
+            return [...new Set(values)];
+        }
+
+        // ---------- SUGGESTIONS ----------
+        function setupSuggestions(input, suggestionsDiv, field) {
+            input.addEventListener('focus', function() {
+                const values = getUniqueValues(field);
+                if (values.length > 0) {
+                    suggestionsDiv.innerHTML = values.map(v => `<div>${v}</div>`).join('');
+                    suggestionsDiv.classList.add('active');
+                }
+            });
+
+            input.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                const values = getUniqueValues(field).filter(v => v.toLowerCase().includes(query));
+                if (values.length > 0 && query) {
+                    suggestionsDiv.innerHTML = values.map(v => `<div>${v}</div>`).join('');
+                    suggestionsDiv.classList.add('active');
+                } else {
+                    suggestionsDiv.classList.remove('active');
+                }
+            });
+
+            suggestionsDiv.addEventListener('click', function(e) {
+                if (e.target.tagName === 'DIV') {
+                    input.value = e.target.textContent;
+                    suggestionsDiv.classList.remove('active');
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!suggestionsDiv.contains(e.target) && e.target !== input) {
+                    suggestionsDiv.classList.remove('active');
+                }
+            });
+        }
+
+        // ---------- SALVAR E CARREGAR DO localStorage ----------
+        function salvarEventos() {
+            try {
+                localStorage.setItem('agenda_events', JSON.stringify(events));
+                localStorage.setItem('agenda_nextId', String(nextId));
+            } catch (e) {
+                console.warn('Erro ao salvar no localStorage:', e);
+            }
+        }
+
+        function carregarEventos() {
+            try {
+                const data = localStorage.getItem('agenda_events');
+                const idData = localStorage.getItem('agenda_nextId');
+                if (data) {
+                    events = JSON.parse(data);
+                }
+                if (idData) {
+                    nextId = parseInt(idData) || 1;
+                }
+                // Se não houver eventos, carregar os dados padrão
+                if (!data || events.length === 0) {
+                    carregarEventosPadrao();
+                }
+            } catch (e) {
+                console.warn('Erro ao carregar do localStorage:', e);
+                carregarEventosPadrao();
+            }
+        }
+
+        function carregarEventosPadrao() {
+            events = [];
+            const hoje = new Date();
+            const y = hoje.getFullYear(), m = hoje.getMonth(), d = hoje.getDate();
+            
+            const eventosPadrao = [
+                { data: '2026-06-19', horaInicio: '10:00', horaFim: '12:00', horaSede: '09:30', local: 'Folia Encantada', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-06-20', horaInicio: '14:00', horaFim: '16:00', horaSede: '13:30', local: 'Folia Encantada', empresa: 'BELA ENCANTO', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-06-20', horaInicio: '17:00', horaFim: '19:00', horaSede: '16:30', local: 'Quintal Aventura', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-06-21', horaInicio: '09:00', horaFim: '11:00', horaSede: '08:30', local: 'Quintal Araguaia', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-06-21', horaInicio: '13:00', horaFim: '15:00', horaSede: '12:30', local: 'Botafogo', empresa: 'BELA ENCANTO', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-06-27', horaInicio: '10:00', horaFim: '12:00', horaSede: '09:30', local: 'Rubble Verificar', empresa: 'SONHART', valor: 130.00, statusPagamento: 'Pendente' },
+                { data: '2026-06-27', horaInicio: '14:00', horaFim: '16:00', horaSede: '13:30', local: 'Quintal Botafogo', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-07-04', horaInicio: '10:00', horaFim: '12:00', horaSede: '09:30', local: 'Estação Faz de Contas Penha', empresa: 'SONHART', valor: 130.00, statusPagamento: 'Pendente' },
+                { data: '2026-07-05', horaInicio: '14:00', horaFim: '16:00', horaSede: '13:30', local: 'Folia Encantada', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-07-18', horaInicio: '10:00', horaFim: '12:00', horaSede: '09:30', local: 'La Ville Kids', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-07-25', horaInicio: '14:00', horaFim: '16:00', horaSede: '13:30', local: 'La Ville Kids', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-08-01', horaInicio: '10:00', horaFim: '12:00', horaSede: '09:30', local: 'Recreio', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-08-08', horaInicio: '14:00', horaFim: '16:00', horaSede: '13:30', local: 'Batata Verificar', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-09-05', horaInicio: '10:00', horaFim: '12:00', horaSede: '09:30', local: 'Folia Encantada', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-11-07', horaInicio: '10:00', horaFim: '12:00', horaSede: '09:30', local: 'Verificar', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' },
+                { data: '2026-11-07', horaInicio: '14:00', horaFim: '16:00', horaSede: '13:30', local: 'Verificar', empresa: 'BBB FESTA', valor: 120.00, statusPagamento: 'Pendente' }
+            ];
+
+            eventosPadrao.forEach((ev, index) => {
+                events.push({
+                    id: index + 1,
+                    ...ev
+                });
+            });
+            nextId = events.length + 1;
+            salvarEventos();
+        }
+
+        // ---------- FUNÇÕES FINANCEIRAS ----------
         function calcularTempoDeslocamento(horaFim, horaSedeProximo) {
             if (!horaFim || !horaSedeProximo) return null;
             const [hfH, hfM] = horaFim.split(':').map(Number);
@@ -716,6 +996,67 @@
         function atualizarFinanceiro() {
             let totalPendente = 0, totalPago = 0;
             let detalhesHtml = '';
+            
+            // Tabela mensal
+            const mesesMap = {};
+            const eventosComValor = events.filter(e => e.valor !== undefined && e.valor !== null && e.valor > 0);
+            
+            eventosComValor.forEach(ev => {
+                const valorNum = parseFloat(ev.valor) || 0;
+                const dataParts = ev.data.split('-');
+                const mesAno = `${dataParts[1]}/${dataParts[0]}`;
+                
+                if (!mesesMap[mesAno]) {
+                    mesesMap[mesAno] = { pago: 0, pendente: 0, total: 0 };
+                }
+                
+                if (ev.statusPagamento === 'Pago') {
+                    mesesMap[mesAno].pago += valorNum;
+                    totalPago += valorNum;
+                } else {
+                    mesesMap[mesAno].pendente += valorNum;
+                    totalPendente += valorNum;
+                }
+                mesesMap[mesAno].total += valorNum;
+            });
+
+            // Montar tabela mensal
+            const mesesOrdenados = Object.keys(mesesMap).sort((a, b) => {
+                const [mesA, anoA] = a.split('/');
+                const [mesB, anoB] = b.split('/');
+                return (parseInt(anoA) - parseInt(anoB)) || (parseInt(mesA) - parseInt(mesB));
+            });
+
+            const mesesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+            
+            let tableHtml = '';
+            mesesOrdenados.forEach(mesAno => {
+                const [mes, ano] = mesAno.split('/');
+                const nomeMes = mesesNomes[parseInt(mes)-1];
+                const dados = mesesMap[mesAno];
+                tableHtml += `<tr>
+                    <td class="month-name">${nomeMes} ${ano}</td>
+                    <td>${formatCurrency(dados.pago)}</td>
+                    <td>${formatCurrency(dados.pendente)}</td>
+                    <td class="month-total">${formatCurrency(dados.total)}</td>
+                </tr>`;
+            });
+
+            if (mesesOrdenados.length > 0) {
+                const totalGeralPago = Object.values(mesesMap).reduce((sum, m) => sum + m.pago, 0);
+                const totalGeralPendente = Object.values(mesesMap).reduce((sum, m) => sum + m.pendente, 0);
+                const totalGeral = totalGeralPago + totalGeralPendente;
+                tableHtml += `<tr class="total-row">
+                    <td><strong>TOTAL GERAL</strong></td>
+                    <td><strong>${formatCurrency(totalGeralPago)}</strong></td>
+                    <td><strong>${formatCurrency(totalGeralPendente)}</strong></td>
+                    <td><strong>${formatCurrency(totalGeral)}</strong></td>
+                </tr>`;
+            }
+
+            monthlyTableBody.innerHTML = tableHtml || '<tr><td colspan="4" style="text-align:center;color:#7f9aaa;">Nenhum evento com valor definido</td></tr>';
+
+            // Detalhes
             const eventosOrdenados = [...events].filter(e => e.valor !== undefined && e.valor !== null && e.valor > 0)
                 .sort((a,b) => a.data.localeCompare(b.data) || a.horaInicio.localeCompare(b.horaInicio));
             
@@ -724,8 +1065,6 @@
             } else {
                 eventosOrdenados.forEach(ev => {
                     const valorNum = parseFloat(ev.valor) || 0;
-                    if (ev.statusPagamento === 'Pago') totalPago += valorNum;
-                    else totalPendente += valorNum;
                     const statusClass = ev.statusPagamento === 'Pago' ? 'event-pago' : 'event-pendente';
                     const statusText = ev.statusPagamento === 'Pago' ? '✅ Pago' : '⏳ Pendente';
                     const btnClass = ev.statusPagamento === 'Pago' ? 'pago' : 'pendente';
@@ -752,6 +1091,7 @@
                     const ev = events.find(e => e.id === id);
                     if (ev) {
                         ev.statusPagamento = ev.statusPagamento === 'Pago' ? 'Pendente' : 'Pago';
+                        salvarEventos();
                         atualizarFinanceiro();
                         renderCalendar();
                         if (selectedDate) renderDayEvents(selectedDate);
@@ -761,6 +1101,7 @@
             });
         }
 
+        // ---------- RENDER CALENDAR ----------
         function renderCalendar() {
             const firstDay = new Date(currentYear, currentMonth, 1).getDay();
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -816,6 +1157,7 @@
             atualizarFinanceiro();
         }
 
+        // ---------- RENDER DAY EVENTS ----------
         function renderDayEvents(dateKey) {
             const list = getEventsForDate(dateKey);
             if (list.length === 0) {
@@ -827,7 +1169,6 @@
                 const statusClass = ev.statusPagamento === 'Pago' ? 'event-pago' : 'event-pendente';
                 const valorStr = ev.valor ? formatCurrency(parseFloat(ev.valor)) : 'R$ 0,00';
                 
-                // Calcular tempo de deslocamento do evento anterior para este
                 let travelInfo = '';
                 if (index > 0) {
                     const prev = list[index - 1];
@@ -867,9 +1208,11 @@
                     const id = parseInt(this.dataset.id);
                     if (confirm('Remover este evento?')) {
                         events = events.filter(e => e.id !== id);
+                        salvarEventos();
                         renderCalendar();
                         if (selectedDate) renderDayEvents(selectedDate);
                         else renderCalendar();
+                        showToast('Evento removido com sucesso!');
                     }
                 });
             });
@@ -877,23 +1220,75 @@
 
         // ---------- SALVAR AGENDA (JSON) ----------
         function salvarAgenda() {
+            salvarEventos();
+            showToast('Agenda salva com sucesso!');
+        }
+
+        // ---------- GERAR PDF ----------
+        function gerarPDF() {
             if (events.length === 0) {
-                showToast('Nenhum evento para salvar');
+                showToast('Nenhum evento para gerar PDF');
                 return;
             }
-            const dataStr = JSON.stringify(events, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
+
+            const pdfContent = document.getElementById('pdfContent');
+            const pdfTableBody = document.getElementById('pdfTableBody');
+            const pdfDate = document.getElementById('pdfDate');
+            const pdfSummary = document.getElementById('pdfSummary');
+
+            // Data atual
             const now = new Date();
-            const dataFormatada = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-            a.download = `agenda_${dataFormatada}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Agenda salva com sucesso!');
+            pdfDate.textContent = now.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            // Montar tabela
+            const eventosOrdenados = [...events].sort((a,b) => a.data.localeCompare(b.data) || a.horaInicio.localeCompare(b.horaInicio));
+            
+            let tableHtml = '';
+            let totalPago = 0, totalPendente = 0;
+            
+            eventosOrdenados.forEach(ev => {
+                const valorNum = parseFloat(ev.valor) || 0;
+                if (ev.statusPagamento === 'Pago') totalPago += valorNum;
+                else totalPendente += valorNum;
+                
+                tableHtml += `<tr>
+                    <td>${formatDateBR(ev.data)}</td>
+                    <td>${ev.empresa}</td>
+                    <td>${ev.local}</td>
+                    <td>${ev.horaInicio} - ${ev.horaFim}</td>
+                    <td>${formatCurrency(valorNum)}</td>
+                    <td>${ev.statusPagamento}</td>
+                </tr>`;
+            });
+
+            pdfTableBody.innerHTML = tableHtml;
+
+            pdfSummary.innerHTML = `
+                <p><strong>Resumo Financeiro:</strong></p>
+                <p>💰 Total Pago: ${formatCurrency(totalPago)}</p>
+                <p>⏳ Total Pendente: ${formatCurrency(totalPendente)}</p>
+                <p>📊 Total Geral: ${formatCurrency(totalPago + totalPendente)}</p>
+                <p><strong>Total de Eventos:</strong> ${events.length}</p>
+            `;
+
+            // Configurar opções do PDF
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `agenda_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, letterRendering: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Mostrar e gerar PDF
+            pdfContent.style.display = 'block';
+            html2pdf().set(opt).from(pdfContent).save().then(() => {
+                pdfContent.style.display = 'none';
+                showToast('PDF gerado com sucesso!');
+            }).catch(() => {
+                pdfContent.style.display = 'none';
+                showToast('Erro ao gerar PDF');
+            });
         }
 
         // ---------- MODAL ----------
@@ -909,6 +1304,7 @@
             evStatusPagamento.value = ev.statusPagamento;
             editingId = ev.id;
             modalOverlay.style.display = 'flex';
+            document.querySelectorAll('.suggestions-list').forEach(el => el.classList.remove('active'));
         }
 
         function openModalForNew() {
@@ -924,10 +1320,12 @@
             evStatusPagamento.value = 'Pendente';
             editingId = null;
             modalOverlay.style.display = 'flex';
+            document.querySelectorAll('.suggestions-list').forEach(el => el.classList.remove('active'));
         }
 
         function closeModal() {
             modalOverlay.style.display = 'none';
+            document.querySelectorAll('.suggestions-list').forEach(el => el.classList.remove('active'));
         }
 
         // ---------- SALVAR EVENTO ----------
@@ -952,9 +1350,8 @@
                     events[index] = { ...events[index], data, horaInicio, horaFim, horaSede, local, empresa, valor, statusPagamento };
                 }
             } else {
-                const newId = events.length ? Math.max(...events.map(e=>e.id)) + 1 : 1;
                 events.push({
-                    id: newId,
+                    id: nextId++,
                     data,
                     horaInicio,
                     horaFim,
@@ -965,11 +1362,13 @@
                     statusPagamento
                 });
             }
+            salvarEventos();
             closeModal();
             renderCalendar();
             if (selectedDate) renderDayEvents(selectedDate);
             else if (events.length) renderDayEvents(events[0].data);
             atualizarFinanceiro();
+            showToast(editingId !== null ? 'Evento atualizado!' : 'Evento agendado!');
         }
 
         // ---------- LOGIN ----------
@@ -982,23 +1381,13 @@
                 loginSection.style.display = 'none';
                 agendaSection.style.display = 'block';
                 displayUser.textContent = user;
-                if (events.length === 0) {
-                    const hoje = new Date();
-                    const y = hoje.getFullYear(), m = hoje.getMonth(), d = hoje.getDate();
-                    const dataEx = formatDateKey(y, m, d);
-                    events.push({ id: 1, data: dataEx, horaInicio: '10:00', horaFim: '11:30', horaSede: '09:30', local: 'Escritório Central', empresa: 'TechCorp', valor: 350.00, statusPagamento: 'Pago' });
-                    const amanha = new Date(y, m, d+1);
-                    const dataEx2 = formatDateKey(amanha.getFullYear(), amanha.getMonth(), amanha.getDate());
-                    events.push({ id: 2, data: dataEx2, horaInicio: '14:00', horaFim: '16:00', horaSede: '13:30', local: 'Hotel Plaza', empresa: 'Inovação Ltda', valor: 520.50, statusPagamento: 'Pendente' });
-                    const depois = new Date(y, m, d+2);
-                    const dataEx3 = formatDateKey(depois.getFullYear(), depois.getMonth(), depois.getDate());
-                    events.push({ id: 3, data: dataEx3, horaInicio: '08:00', horaFim: '09:00', horaSede: '07:30', local: 'Centro de Convenções', empresa: 'Global Solutions', valor: 780.00, statusPagamento: 'Pendente' });
-                    // Mesmo dia com múltiplos eventos para testar deslocamento
-                    const hoje2 = new Date(y, m, d);
-                    const dataHoje = formatDateKey(hoje2.getFullYear(), hoje2.getMonth(), hoje2.getDate());
-                    events.push({ id: 4, data: dataHoje, horaInicio: '14:00', horaFim: '15:30', horaSede: '13:30', local: 'Auditório Sul', empresa: 'DataFlow', valor: 420.00, statusPagamento: 'Pendente' });
-                    events.push({ id: 5, data: dataHoje, horaInicio: '16:00', horaFim: '17:30', horaSede: '15:30', local: 'Torre Norte', empresa: 'CloudNine', valor: 610.00, statusPagamento: 'Pago' });
-                }
+                
+                carregarEventos();
+                
+                const now = new Date();
+                currentYear = now.getFullYear();
+                currentMonth = now.getMonth();
+                
                 renderCalendar();
                 if (events.length) {
                     selectedDate = events[0].data;
@@ -1044,6 +1433,7 @@
         });
 
         btnSalvarAgenda.addEventListener('click', salvarAgenda);
+        btnPDF.addEventListener('click', gerarPDF);
 
         modalCancel.addEventListener('click', closeModal);
         modalOverlay.addEventListener('click', function(e) { if (e.target === modalOverlay) closeModal(); });
@@ -1053,7 +1443,11 @@
             saveEventFromForm();
         });
 
-        // inicialização
+        // Setup suggestions
+        setupSuggestions(evLocal, localSuggestions, 'local');
+        setupSuggestions(evEmpresa, empresaSuggestions, 'empresa');
+
+        // Inicialização
         loginSection.style.display = 'flex';
         agendaSection.style.display = 'none';
         const now = new Date();
@@ -1064,3 +1458,4 @@
 </script>
 </body>
 </html>
+[file content end]
