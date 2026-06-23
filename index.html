@@ -1641,64 +1641,101 @@ async function sincronizarNuvem() {
         event.target.value = '';
     }
 
-    // ============================================================
-    // LOGIN
-    // ============================================================
-    function doLogin() {
-        const user = loginUser.value.trim();
-        const pass = loginPass.value.trim();
+   // ============================================================
+// LOGIN
+// ============================================================
+async function doLogin() {
+    const user = loginUser.value.trim();
+    const pass = loginPass.value.trim();
+    
+    if (!user || !pass) {
+        loginError.textContent = 'Preencha usuário e senha';
+        loginError.style.display = 'block';
+        return;
+    }
+    
+    // 🔥 PRIMEIRO: Carregar usuários da nuvem
+    users = await carregarUsuariosNuvem();
+    
+    const auth = autenticarUsuario(user, pass);
+    if (auth) {
+        currentUser = user;
+        loginError.style.display = 'none';
+        loginSection.style.display = 'none';
+        agendaSection.style.display = 'block';
+        displayUser.textContent = user;
         
-        if (!user || !pass) {
-            loginError.textContent = 'Preencha usuário e senha';
-            loginError.style.display = 'block';
+        // 🔥 SEGUNDO: Carregar eventos da nuvem
+        await carregarEventosNuvem();
+        
+        // 🔥 TERCEIRO: Renderizar tudo
+        const now = new Date();
+        currentYear = now.getFullYear();
+        currentMonth = now.getMonth();
+        renderCalendar();
+        if (events.length) {
+            selectedDate = events[0].data;
+            renderDayEvents(selectedDate);
+        }
+        financePanel.classList.remove('visible');
+        atualizarFinanceiro();
+        setSyncStatus('synced', '<i class="fas fa-cloud"></i> Sincronizado');
+        showToast('✅ Dados carregados da nuvem!');
+    } else {
+        loginError.textContent = 'Usuário ou senha inválidos';
+        loginError.style.display = 'block';
+    }
+}
+// ============================================================
+// CARREGAR EVENTOS DA NUVEM
+// ============================================================
+async function carregarEventosNuvem() {
+    try {
+        if (!SYNC_CONFIG.useJsonBin || !SYNC_CONFIG.binId) {
+            // Fallback para localStorage
+            carregarEventosLocal();
             return;
         }
         
-        const auth = autenticarUsuario(user, pass);
-        if (auth) {
-            currentUser = user;
-            loginError.style.display = 'none';
-            loginSection.style.display = 'none';
-            agendaSection.style.display = 'block';
-            displayUser.textContent = user;
-            
-            const temLocal = carregarEventosLocal();
-            if (!temLocal) {
-                sincronizarNuvem().then(() => {
-                    carregarEventosLocal();
-                    renderCalendar();
-                    if (events.length) {
-                        selectedDate = events[0].data;
-                        renderDayEvents(selectedDate);
-                    }
-                    atualizarFinanceiro();
-                });
-            } else {
-                const now = new Date();
-                currentYear = now.getFullYear();
-                currentMonth = now.getMonth();
-                renderCalendar();
-                if (events.length) {
-                    selectedDate = events[0].data;
-                    renderDayEvents(selectedDate);
-                }
-                financePanel.classList.remove('visible');
-                atualizarFinanceiro();
-                setTimeout(sincronizarNuvem, 1000);
+        console.log('🔍 Carregando eventos da nuvem...');
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${SYNC_CONFIG.binId}/latest`, {
+            headers: {
+                'X-Master-Key': SYNC_CONFIG.jsonBinKey,
+                'Content-Type': 'application/json'
             }
-        } else {
-            loginError.textContent = 'Usuário ou senha inválidos';
-            loginError.style.display = 'block';
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const record = data.record;
+            
+            if (record && record.events) {
+                events = record.events;
+                nextId = record.nextId || events.length + 1;
+                salvarEventosLocal(); // Cache local
+                console.log('✅ Eventos carregados da nuvem:', events.length);
+                return;
+            }
         }
+        
+        // Fallback: carregar do localStorage
+        carregarEventosLocal();
+        console.log('📁 Eventos carregados do localStorage');
+    } catch (error) {
+        console.warn('⚠️ Erro ao carregar eventos da nuvem:', error);
+        carregarEventosLocal();
     }
+}
 // ============================================================
-// USUÁRIOS NA NUVEM (JSONBin)
+// CARREGAR USUÁRIOS DA NUVEM
 // ============================================================
-
 async function carregarUsuariosNuvem() {
     try {
-        if (!SYNC_CONFIG.usersBinId) return carregarUsuariosLocal();
+        if (!SYNC_CONFIG.useJsonBin || !SYNC_CONFIG.usersBinId) {
+            return carregarUsuariosLocal();
+        }
         
+        console.log('🔍 Carregando usuários da nuvem...');
         const response = await fetch(`https://api.jsonbin.io/v3/b/${SYNC_CONFIG.usersBinId}/latest`, {
             headers: {
                 'X-Master-Key': SYNC_CONFIG.jsonBinKey,
@@ -1708,15 +1745,22 @@ async function carregarUsuariosNuvem() {
         
         if (response.ok) {
             const data = await response.json();
-            const users = data.record.users || [];
-            // Salvar localmente como cache
-            localStorage.setItem('agenda_users', JSON.stringify(users));
-            return users;
+            const record = data.record;
+            
+            if (record && record.users) {
+                users = record.users;
+                salvarUsuariosLocal(users);
+                console.log('✅ Usuários carregados da nuvem:', users.length);
+                return users;
+            }
         }
-    } catch (e) {
-        console.warn('Erro ao carregar usuários da nuvem:', e);
+        
+        // Fallback
+        return carregarUsuariosLocal();
+    } catch (error) {
+        console.warn('⚠️ Erro ao carregar usuários da nuvem:', error);
+        return carregarUsuariosLocal();
     }
-    return carregarUsuariosLocal();
 }
 
 async function salvarUsuariosNuvem(users) {
