@@ -1,7 +1,4 @@
-<!-- ============================================================ -->
-<!-- cadastrousuario.html - Página Administrativa -->
-<!-- ============================================================ -->
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -24,7 +21,7 @@
             padding: 16px;
         }
         .admin-container {
-            max-width: 600px;
+            max-width: 750px;
             width: 100%;
             background: rgba(255,255,255,0.85);
             backdrop-filter: blur(10px);
@@ -92,11 +89,11 @@
         .btn-success {
             background: #0f7b3a;
             border: none;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 60px;
             color: white;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: 0.2s;
             display: inline-flex;
@@ -110,25 +107,45 @@
         .btn-danger {
             background: #b34a4a;
             border: none;
-            padding: 6px 16px;
+            padding: 6px 14px;
             border-radius: 40px;
             color: white;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             cursor: pointer;
             transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
         .btn-danger:hover {
             background: #8a3a3a;
         }
+        .btn-warning {
+            background: #d97706;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-warning:hover {
+            background: #b85e05;
+        }
         .btn-secondary {
             background: #e4edf3;
             border: none;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 60px;
             color: #1a3b4e;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: 0.2s;
             display: inline-flex;
@@ -138,6 +155,11 @@
         }
         .btn-secondary:hover {
             background: #cbdde9;
+        }
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 0.7rem;
+            border-radius: 30px;
         }
         .admin-area {
             display: none;
@@ -150,45 +172,73 @@
         .user-list {
             background: white;
             border-radius: 20px;
-            padding: 16px;
-            margin: 16px 0;
+            padding: 8px 4px;
+            margin: 12px 0 16px;
             border: 1px solid #dce8f0;
+            max-height: 400px;
+            overflow-y: auto;
         }
         .user-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 8px;
+            padding: 12px 14px;
             border-bottom: 1px solid #eef4f8;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .user-item:last-child {
             border-bottom: none;
         }
+        .user-item .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
         .user-item .user-name {
-            font-weight: 500;
+            font-weight: 600;
             color: #0b2a3b;
+            font-size: 0.95rem;
         }
         .user-item .user-badge {
-            font-size: 0.7rem;
-            background: #d8ecfa;
-            color: #1f5e7a;
-            padding: 2px 12px;
+            font-size: 0.6rem;
+            padding: 2px 10px;
             border-radius: 40px;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .user-badge.admin {
+            background: #d8ecfa;
+            color: #1f5e7a;
+        }
+        .user-badge.active {
+            background: #d2f0df;
+            color: #0f7b3a;
+        }
+        .user-badge.inactive {
+            background: #ffe1d9;
+            color: #b14b2a;
+        }
+        .user-item .user-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
         }
         .form-row {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
-            margin-top: 12px;
+            margin-top: 8px;
         }
         .form-row input {
             flex: 1;
             min-width: 150px;
-            padding: 12px 16px;
+            padding: 10px 16px;
             border: 2px solid #dce6ec;
             border-radius: 60px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             background: #f8fafc;
         }
         .form-row input:focus {
@@ -196,11 +246,12 @@
             border-color: #2a7faa;
         }
         .message {
-            padding: 12px 16px;
+            padding: 10px 16px;
             border-radius: 40px;
-            margin-top: 12px;
+            margin-top: 10px;
             font-weight: 500;
             display: none;
+            font-size: 0.9rem;
         }
         .message.success {
             background: #d2f0df;
@@ -216,11 +267,11 @@
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
-            margin-top: 16px;
+            margin-top: 12px;
         }
         .info-text {
             color: #6b8b9e;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             margin-top: 8px;
         }
         .back-link {
@@ -252,12 +303,119 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 12px;
+            margin-bottom: 12px;
+        }
+        .admin-header h2 {
+            font-size: 1.3rem;
+            color: #0b2a3b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            padding: 8px 4px;
+        }
+        .stat-item {
+            background: white;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: #1a3b4e;
+            border: 1px solid #dce8f0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .stat-item .num {
+            font-weight: 700;
+            color: #0b2a3b;
+        }
+        .stat-item .num.active-num { color: #0f7b3a; }
+        .stat-item .num.inactive-num { color: #b14b2a; }
+        .modal-overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,20,30,0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 20px;
+        }
+        .modal-card {
+            background: white;
+            max-width: 400px;
+            width: 100%;
+            border-radius: 40px;
+            padding: 28px 24px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            animation: fadeUp 0.25s;
+        }
+        .modal-card h3 {
+            font-weight: 600;
+            color: #0b2a3b;
             margin-bottom: 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .modal-card label {
+            font-weight: 500;
+            color: #1f4b61;
+            display: block;
+            margin: 12px 0 4px;
+        }
+        .modal-card input {
+            width: 100%;
+            padding: 10px 16px;
+            border: 2px solid #dce6ec;
+            border-radius: 60px;
+            background: #fafcfd;
+            font-size: 0.95rem;
+        }
+        .modal-card input:focus {
+            border-color: #2a7faa;
+            outline: none;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .modal-actions .btn-cancel {
+            background: #e4edf3;
+            color: #1a3b4e;
+        }
+        .modal-actions .btn-cancel:hover {
+            background: #cbdde9;
+        }
+        .modal-actions .btn-save {
+            background: #1f5e7a;
+            color: white;
+        }
+        .modal-actions .btn-save:hover {
+            background: #134a63;
         }
         @media (max-width: 600px) {
             .admin-container { padding: 20px 16px; }
             .form-row { flex-direction: column; }
             .form-row input { min-width: unset; }
+            .user-item { flex-direction: column; align-items: stretch; }
+            .user-item .user-actions { justify-content: flex-start; }
         }
     </style>
 </head>
@@ -285,19 +443,26 @@
     <!-- ÁREA ADMIN -->
     <div class="admin-area" id="adminArea">
         <div class="admin-header">
-            <span style="font-weight:600; color:#0b2a3b;">
-                <i class="fas fa-users"></i> Gerenciar Usuários
-            </span>
-            <button class="btn-secondary" id="adminLogoutBtn" style="padding:8px 18px; font-size:0.85rem;">
+            <h2><i class="fas fa-users"></i> Gerenciar Usuários</h2>
+            <button class="btn-secondary" id="adminLogoutBtn" style="padding:6px 16px; font-size:0.8rem;">
                 <i class="fas fa-sign-out-alt"></i> Sair
             </button>
         </div>
+
+        <!-- Estatísticas -->
+        <div class="stats-bar" id="statsBar">
+            <span class="stat-item"><i class="fas fa-users"></i> Total: <span class="num" id="totalUsers">0</span></span>
+            <span class="stat-item"><i class="fas fa-check-circle" style="color:#0f7b3a;"></i> Ativos: <span class="num active-num" id="activeUsers">0</span></span>
+            <span class="stat-item"><i class="fas fa-times-circle" style="color:#b14b2a;"></i> Inativos: <span class="num inactive-num" id="inactiveUsers">0</span></span>
+        </div>
         
+        <!-- Lista de Usuários -->
         <div class="user-list" id="userListContainer">
-            <p style="color:#7f9aaa;">Carregando usuários...</p>
+            <p style="color:#7f9aaa; text-align:center; padding:20px;">Carregando usuários...</p>
         </div>
 
-        <h4 style="color:#0b2a3b; margin-top:20px;"><i class="fas fa-user-plus"></i> Cadastrar Novo Usuário</h4>
+        <!-- Cadastrar Novo -->
+        <h4 style="color:#0b2a3b; margin-top:16px;"><i class="fas fa-user-plus"></i> Cadastrar Novo Usuário</h4>
         <div class="form-row">
             <input type="text" id="newUsername" placeholder="Nome de usuário">
             <input type="password" id="newPassword" placeholder="Senha">
@@ -306,18 +471,44 @@
         <div class="message" id="adminMessage"></div>
         
         <div class="info-text">
-            <i class="fas fa-info-circle"></i> Usuários cadastrados podem acessar a agenda principal.
+            <i class="fas fa-info-circle"></i> Usuários inativos não podem acessar a agenda.
         </div>
         
         <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para a Agenda</a>
     </div>
 </div>
 
+<!-- MODAL EDITAR SENHA -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-card">
+        <h3><i class="fas fa-edit"></i> Editar Senha</h3>
+        <p style="color:#6b8b9e; font-size:0.9rem; margin-bottom:12px;">
+            Alterando senha de: <strong id="editUsernameDisplay"></strong>
+        </p>
+        <label>Nova Senha</label>
+        <input type="password" id="editPassword" placeholder="Digite a nova senha">
+        <label>Confirmar Senha</label>
+        <input type="password" id="editPasswordConfirm" placeholder="Confirme a nova senha">
+        <div class="modal-actions">
+            <button class="btn-cancel" id="editCancel">Cancelar</button>
+            <button class="btn-save" id="editSave"><i class="fas fa-save"></i> Salvar</button>
+        </div>
+        <div class="message" id="editMessage" style="margin-top:10px;"></div>
+    </div>
+</div>
+
 <script>
 (function() {
+    // ============================================================
+    // CONFIGURAÇÃO
+    // ============================================================
     const ADMIN_USER = 'edmonteiro';
     const ADMIN_PASS = '155145';
+    const MASTER_ADMIN = 'edmonteiro'; // Não pode ser removido/desativado
 
+    // ============================================================
+    // DOM
+    // ============================================================
     const loginSection = document.getElementById('loginAdminSection');
     const adminArea = document.getElementById('adminArea');
     const adminLoginUser = document.getElementById('adminLoginUser');
@@ -330,27 +521,56 @@
     const newPassword = document.getElementById('newPassword');
     const btnAddUser = document.getElementById('btnAddUser');
     const adminMessage = document.getElementById('adminMessage');
+    const totalUsers = document.getElementById('totalUsers');
+    const activeUsers = document.getElementById('activeUsers');
+    const inactiveUsers = document.getElementById('inactiveUsers');
 
-    let isLoggedIn = false;
+    // Modal
+    const editModal = document.getElementById('editModal');
+    const editUsernameDisplay = document.getElementById('editUsernameDisplay');
+    const editPassword = document.getElementById('editPassword');
+    const editPasswordConfirm = document.getElementById('editPasswordConfirm');
+    const editCancel = document.getElementById('editCancel');
+    const editSave = document.getElementById('editSave');
+    const editMessage = document.getElementById('editMessage');
+
+    let editingUser = null;
 
     // ============================================================
-    // CARREGAR USUÁRIOS
+    // FUNÇÕES DE USUÁRIOS
     // ============================================================
     function carregarUsuarios() {
         try {
             const data = localStorage.getItem('agenda_users');
             if (data) {
-                return JSON.parse(data);
+                let users = JSON.parse(data);
+                // Garantir que todos os usuários tenham o campo 'active'
+                users = users.map(u => {
+                    if (u.active === undefined) {
+                        u.active = true;
+                    }
+                    return u;
+                });
+                // Garantir que o admin master existe e está ativo
+                const adminExists = users.find(u => u.username === MASTER_ADMIN);
+                if (!adminExists) {
+                    users.push({ username: MASTER_ADMIN, password: ADMIN_PASS, active: true });
+                } else {
+                    // Garantir que o admin master está ativo
+                    adminExists.active = true;
+                }
+                salvarUsuarios(users);
+                return users;
             } else {
                 const defaultUsers = [
-                    { username: 'admin', password: '123' },
-                    { username: 'edmonteiro', password: '155145' }
+                    { username: 'admin', password: '123', active: true },
+                    { username: MASTER_ADMIN, password: ADMIN_PASS, active: true }
                 ];
-                localStorage.setItem('agenda_users', JSON.stringify(defaultUsers));
+                salvarUsuarios(defaultUsers);
                 return defaultUsers;
             }
         } catch (e) {
-            return [{ username: 'admin', password: '123' }, { username: 'edmonteiro', password: '155145' }];
+            return [{ username: 'admin', password: '123', active: true }, { username: MASTER_ADMIN, password: ADMIN_PASS, active: true }];
         }
     }
 
@@ -362,42 +582,212 @@
         }
     }
 
+    function getUsers() {
+        return carregarUsuarios();
+    }
+
+    function updateUser(username, updates) {
+        let users = getUsers();
+        const index = users.findIndex(u => u.username === username);
+        if (index !== -1) {
+            users[index] = { ...users[index], ...updates };
+            salvarUsuarios(users);
+            return true;
+        }
+        return false;
+    }
+
+    function deleteUser(username) {
+        if (username === MASTER_ADMIN) return false;
+        let users = getUsers();
+        users = users.filter(u => u.username !== username);
+        salvarUsuarios(users);
+        return true;
+    }
+
+    function toggleUserActive(username) {
+        if (username === MASTER_ADMIN) return false;
+        let users = getUsers();
+        const user = users.find(u => u.username === username);
+        if (user) {
+            user.active = !user.active;
+            salvarUsuarios(users);
+            return user.active;
+        }
+        return false;
+    }
+
+    function changePassword(username, newPassword) {
+        if (!newPassword || newPassword.length < 3) return false;
+        let users = getUsers();
+        const user = users.find(u => u.username === username);
+        if (user) {
+            user.password = newPassword;
+            salvarUsuarios(users);
+            return true;
+        }
+        return false;
+    }
+
+    function addUser(username, password) {
+        if (!username || username.length < 3) return { success: false, message: 'Usuário deve ter pelo menos 3 caracteres.' };
+        if (!password || password.length < 3) return { success: false, message: 'Senha deve ter pelo menos 3 caracteres.' };
+        
+        let users = getUsers();
+        if (users.find(u => u.username === username)) {
+            return { success: false, message: 'Usuário já existe.' };
+        }
+        
+        users.push({ username, password, active: true });
+        salvarUsuarios(users);
+        return { success: true, message: `Usuário "${username}" cadastrado com sucesso!` };
+    }
+
     // ============================================================
-    // RENDER LISTA
+    // RENDERIZAR LISTA
     // ============================================================
     function renderizarUsuarios() {
-        const users = carregarUsuarios();
+        const users = getUsers();
         let html = '';
+        
         users.forEach(u => {
-            const isAdmin = u.username === 'edmonteiro' || u.username === 'admin';
+            const isMaster = u.username === MASTER_ADMIN;
+            const isAdmin = u.username === 'admin' || isMaster;
+            const isActive = u.active !== false;
+            
+            const statusBadge = isMaster ? 'admin' : (isActive ? 'active' : 'inactive');
+            const statusLabel = isMaster ? 'Admin Master' : (isActive ? 'Ativo' : 'Inativo');
+            
             html += `
-                <div class="user-item">
-                    <span class="user-name"><i class="fas fa-user"></i> ${u.username}</span>
-                    <span>
-                        ${isAdmin ? '<span class="user-badge">Admin</span>' : `
-                            <button class="btn-danger btn-remove-user" data-user="${u.username}">
-                                <i class="fas fa-trash-alt"></i> Remover
+                <div class="user-item" data-username="${u.username}">
+                    <div class="user-info">
+                        <span class="user-name"><i class="fas fa-user"></i> ${u.username}</span>
+                        <span class="user-badge ${statusBadge}">${statusLabel}</span>
+                        ${isMaster ? '<span style="font-size:0.6rem;color:#2a7faa;font-weight:600;">🔒</span>' : ''}
+                    </div>
+                    <div class="user-actions">
+                        ${!isMaster ? `
+                            <button class="btn-warning btn-sm btn-toggle-active" data-user="${u.username}" data-active="${isActive}">
+                                <i class="fas ${isActive ? 'fa-pause' : 'fa-play'}"></i>
+                                ${isActive ? 'Desativar' : 'Ativar'}
+                            </button>
+                            <button class="btn-warning btn-sm btn-edit-pass" data-user="${u.username}" style="background:#8b5e3b;">
+                                <i class="fas fa-key"></i> Senha
+                            </button>
+                            <button class="btn-danger btn-sm btn-delete-user" data-user="${u.username}">
+                                <i class="fas fa-trash-alt"></i> Excluir
+                            </button>
+                        ` : `
+                            <button class="btn-warning btn-sm btn-edit-pass" data-user="${u.username}" style="background:#8b5e3b;">
+                                <i class="fas fa-key"></i> Senha
                             </button>
                         `}
-                    </span>
+                    </div>
                 </div>
             `;
         });
-        userListContainer.innerHTML = html;
+        
+        userListContainer.innerHTML = html || '<p style="color:#7f9aaa; text-align:center; padding:20px;">Nenhum usuário cadastrado.</p>';
+        
+        // Atualizar estatísticas
+        const total = users.length;
+        const ativos = users.filter(u => u.active !== false).length;
+        const inativos = users.filter(u => u.active === false).length;
+        totalUsers.textContent = total;
+        activeUsers.textContent = ativos;
+        inactiveUsers.textContent = inativos;
 
-        // Event listeners para remover
-        document.querySelectorAll('.btn-remove-user').forEach(btn => {
+        // ============================================================
+        // EVENT LISTENERS DOS BOTÕES
+        // ============================================================
+        // Toggle Ativo/Inativo
+        document.querySelectorAll('.btn-toggle-active').forEach(btn => {
             btn.addEventListener('click', function() {
                 const user = this.dataset.user;
-                if (confirm(`⚠️ Remover o usuário "${user}" permanentemente?`)) {
-                    let users = carregarUsuarios();
-                    users = users.filter(u => u.username !== user);
-                    salvarUsuarios(users);
+                const newStatus = toggleUserActive(user);
+                if (newStatus !== false) {
                     renderizarUsuarios();
-                    showMessage(`Usuário "${user}" removido com sucesso!`, 'success');
+                    showMessage(`Usuário "${user}" ${newStatus ? 'ativado' : 'desativado'}!`, 'success');
+                } else {
+                    showMessage(`Não é possível desativar o usuário master.`, 'error');
                 }
             });
         });
+
+        // Editar Senha
+        document.querySelectorAll('.btn-edit-pass').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const user = this.dataset.user;
+                openEditModal(user);
+            });
+        });
+
+        // Excluir
+        document.querySelectorAll('.btn-delete-user').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const user = this.dataset.user;
+                if (confirm(`⚠️ Tem certeza que deseja excluir o usuário "${user}" permanentemente?`)) {
+                    if (deleteUser(user)) {
+                        renderizarUsuarios();
+                        showMessage(`Usuário "${user}" excluído com sucesso!`, 'success');
+                    } else {
+                        showMessage(`Não é possível excluir o usuário master.`, 'error');
+                    }
+                }
+            });
+        });
+    }
+
+    // ============================================================
+    // MODAL EDITAR SENHA
+    // ============================================================
+    function openEditModal(username) {
+        editingUser = username;
+        editUsernameDisplay.textContent = username;
+        editPassword.value = '';
+        editPasswordConfirm.value = '';
+        editMessage.style.display = 'none';
+        editModal.style.display = 'flex';
+        editPassword.focus();
+    }
+
+    function closeEditModal() {
+        editModal.style.display = 'none';
+        editingUser = null;
+    }
+
+    function saveEditPassword() {
+        const newPass = editPassword.value.trim();
+        const confirmPass = editPasswordConfirm.value.trim();
+
+        if (!newPass || newPass.length < 3) {
+            editMessage.textContent = '⚠️ Senha deve ter pelo menos 3 caracteres.';
+            editMessage.className = 'message error';
+            editMessage.style.display = 'block';
+            return;
+        }
+
+        if (newPass !== confirmPass) {
+            editMessage.textContent = '⚠️ As senhas não coincidem.';
+            editMessage.className = 'message error';
+            editMessage.style.display = 'block';
+            return;
+        }
+
+        if (changePassword(editingUser, newPass)) {
+            editMessage.textContent = '✅ Senha alterada com sucesso!';
+            editMessage.className = 'message success';
+            editMessage.style.display = 'block';
+            setTimeout(() => {
+                closeEditModal();
+                renderizarUsuarios();
+                showMessage(`Senha de "${editingUser}" alterada!`, 'success');
+            }, 1000);
+        } else {
+            editMessage.textContent = '⚠️ Erro ao alterar senha.';
+            editMessage.className = 'message error';
+            editMessage.style.display = 'block';
+        }
     }
 
     // ============================================================
@@ -420,7 +810,6 @@
         const pass = adminLoginPass.value.trim();
 
         if (user === ADMIN_USER && pass === ADMIN_PASS) {
-            isLoggedIn = true;
             adminLoginError.style.display = 'none';
             loginSection.style.display = 'none';
             adminArea.style.display = 'block';
@@ -432,7 +821,6 @@
     }
 
     function doAdminLogout() {
-        isLoggedIn = false;
         adminArea.style.display = 'none';
         loginSection.style.display = 'block';
         adminLoginPass.value = '';
@@ -446,39 +834,21 @@
         const username = newUsername.value.trim();
         const password = newPassword.value.trim();
 
-        if (!username || !password) {
-            showMessage('⚠️ Preencha usuário e senha.', 'error');
-            return;
+        const result = addUser(username, password);
+        if (result.success) {
+            renderizarUsuarios();
+            newUsername.value = '';
+            newPassword.value = '';
+            showMessage(result.message, 'success');
+        } else {
+            showMessage(result.message, 'error');
         }
-
-        if (username.length < 3) {
-            showMessage('⚠️ Usuário deve ter pelo menos 3 caracteres.', 'error');
-            return;
-        }
-
-        if (password.length < 3) {
-            showMessage('⚠️ Senha deve ter pelo menos 3 caracteres.', 'error');
-            return;
-        }
-
-        let users = carregarUsuarios();
-        
-        if (users.find(u => u.username === username)) {
-            showMessage('⚠️ Usuário já existe.', 'error');
-            return;
-        }
-
-        users.push({ username, password });
-        salvarUsuarios(users);
-        renderizarUsuarios();
-        newUsername.value = '';
-        newPassword.value = '';
-        showMessage(`✅ Usuário "${username}" cadastrado com sucesso!`, 'success');
     }
 
     // ============================================================
     // EVENT LISTENERS
     // ============================================================
+    // Login
     adminLoginBtn.addEventListener('click', doAdminLogin);
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && loginSection.style.display !== 'none') {
@@ -487,6 +857,8 @@
     });
 
     adminLogoutBtn.addEventListener('click', doAdminLogout);
+
+    // Cadastrar
     btnAddUser.addEventListener('click', cadastrarUsuario);
     newUsername.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') cadastrarUsuario();
@@ -495,14 +867,27 @@
         if (e.key === 'Enter') cadastrarUsuario();
     });
 
+    // Modal
+    editCancel.addEventListener('click', closeEditModal);
+    editModal.addEventListener('click', function(e) {
+        if (e.target === editModal) closeEditModal();
+    });
+    editSave.addEventListener('click', saveEditPassword);
+    editPassword.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveEditPassword();
+    });
+    editPasswordConfirm.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveEditPassword();
+    });
+
     // ============================================================
     // INICIALIZAÇÃO
     // ============================================================
-    // Garantir que o admin específico existe
+    // Garantir que o admin master existe
     const users = carregarUsuarios();
-    const adminExists = users.find(u => u.username === 'edmonteiro');
+    const adminExists = users.find(u => u.username === MASTER_ADMIN);
     if (!adminExists) {
-        users.push({ username: 'edmonteiro', password: '155145' });
+        users.push({ username: MASTER_ADMIN, password: ADMIN_PASS, active: true });
         salvarUsuarios(users);
     }
 
