@@ -822,16 +822,7 @@
 
 <script>
 (function() {
-    // ============================================================
-    // CONFIGURAÇÃO DE SINCRONIZAÇÃO EM NUVEM
-    // ============================================================
-    const SYNC_CONFIG = {
-        useJsonBin: true,
-        jsonBinKey: '$2a$10$YOUR_BIN_KEY_HERE',
-        binId: 'YOUR_BIN_ID'
-    };
-
-    // ============================================================
+ // ============================================================
     // ESTADO
     // ============================================================
     let currentUser = null;
@@ -1421,118 +1412,185 @@
     }
 
     // ============================================================
-    // SINCRONIZAÇÃO EM NUVEM
-    // ============================================================
-    async function buscarDadosNuvem() {
-        try {
-            if (!SYNC_CONFIG.useJsonBin || !SYNC_CONFIG.binId || SYNC_CONFIG.binId === 'YOUR_BIN_ID') {
-                return null;
-            }
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${SYNC_CONFIG.binId}/latest`, {
-                headers: {
-                    'X-Master-Key': SYNC_CONFIG.jsonBinKey
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                return data.record;
-            }
-            return null;
-        } catch (error) {
-            console.warn('Erro ao buscar dados da nuvem:', error);
+// SINCRONIZAÇÃO EM NUVEM (JSONBin.io)
+// ============================================================
+async function buscarDadosNuvem() {
+    try {
+        if (!SYNC_CONFIG.useJsonBin || !SYNC_CONFIG.binId || SYNC_CONFIG.binId === 'YOUR_BIN_ID' || SYNC_CONFIG.binId === '66f8b4f4ad19ca34f8b6c6b6') {
+            console.warn('⚠️ JSONBin não configurado. Use dados locais.');
             return null;
         }
+        
+        console.log('🔍 Buscando dados da nuvem...');
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${SYNC_CONFIG.binId}/latest`, {
+            headers: {
+                'X-Master-Key': SYNC_CONFIG.jsonBinKey,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.status === 404) {
+            console.warn('⚠️ Bin não encontrado. Será criado automaticamente.');
+            return null;
+        }
+        
+        if (!response.ok) {
+            console.error('❌ Erro ao buscar dados:', response.status, response.statusText);
+            return null;
+        }
+        
+        const data = await response.json();
+        console.log('✅ Dados buscados com sucesso!');
+        return data.record;
+    } catch (error) {
+        console.error('❌ Erro ao buscar dados da nuvem:', error);
+        return null;
     }
+}
 
-    async function enviarDadosNuvem() {
-        try {
-            if (!SYNC_CONFIG.useJsonBin || !SYNC_CONFIG.binId || SYNC_CONFIG.binId === 'YOUR_BIN_ID') {
-                return false;
-            }
-            
-            const version = Date.now().toString();
-            const dados = {
-                events: events,
-                nextId: nextId,
-                version: version,
-                updatedAt: new Date().toISOString()
-            };
-            
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${SYNC_CONFIG.binId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': SYNC_CONFIG.jsonBinKey
-                },
-                body: JSON.stringify(dados)
-            });
-            
-            if (response.ok) {
-                localStorage.setItem('agenda_version', version);
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error('Erro ao enviar dados:', error);
+async function enviarDadosNuvem() {
+    try {
+        if (!SYNC_CONFIG.useJsonBin || !SYNC_CONFIG.binId || SYNC_CONFIG.binId === 'YOUR_BIN_ID' || SYNC_CONFIG.binId === '66f8b4f4ad19ca34f8b6c6b6') {
+            console.warn('⚠️ JSONBin não configurado. Dados salvos apenas localmente.');
             return false;
         }
-    }
-
-    async function sincronizarNuvem() {
-        if (isSyncing) return;
-        isSyncing = true;
-        setSyncStatus('syncing', '<i class="fas fa-spinner fa-spin"></i> Sincronizando...');
-
-        try {
-            const dadosNuvem = await buscarDadosNuvem();
+        
+        const version = Date.now().toString();
+        const dados = {
+            events: events,
+            nextId: nextId,
+            version: version,
+            updatedAt: new Date().toISOString()
+        };
+        
+        console.log('📤 Enviando dados para nuvem...');
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${SYNC_CONFIG.binId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': SYNC_CONFIG.jsonBinKey
+            },
+            body: JSON.stringify(dados)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Erro ao enviar dados:', response.status, errorText);
             
-            if (dadosNuvem && dadosNuvem.events && dadosNuvem.events.length > 0) {
-                const versaoLocal = localStorage.getItem('agenda_version') || '0';
-                const versaoNuvem = dadosNuvem.version || '0';
-                
-                if (versaoNuvem !== versaoLocal) {
-                    if (confirm('📥 Há atualizações na nuvem. Deseja baixar os dados mais recentes?\n\nClique em "OK" para baixar (perderá alterações locais não salvas) ou "Cancelar" para manter local e enviar.')) {
-                        events = dadosNuvem.events;
-                        nextId = dadosNuvem.nextId || events.length + 1;
-                        salvarEventosLocal();
-                        localStorage.setItem('agenda_version', versaoNuvem);
-                        renderCalendar();
-                        if (selectedDate) renderDayEvents(selectedDate);
-                        atualizarFinanceiro();
-                        setSyncStatus('synced', '<i class="fas fa-cloud"></i> Sincronizado');
-                        showToast('✅ Dados baixados da nuvem!');
-                    } else {
-                        const enviado = await enviarDadosNuvem();
-                        if (enviado) {
-                            setSyncStatus('synced', '<i class="fas fa-cloud"></i> Sincronizado');
-                            showToast('✅ Dados enviados para nuvem!');
-                        } else {
-                            setSyncStatus('error', '<i class="fas fa-exclamation-triangle"></i> Erro ao enviar');
-                            showToast('⚠️ Erro ao enviar para nuvem');
-                        }
-                    }
-                } else {
+            // Se o bin não existe, tentar criar
+            if (response.status === 404) {
+                console.log('🔄 Bin não existe. Tentando criar...');
+                return await criarBinNuvem(dados);
+            }
+            return false;
+        }
+        
+        localStorage.setItem('agenda_version', version);
+        console.log('✅ Dados enviados com sucesso!');
+        return true;
+    } catch (error) {
+        console.error('❌ Erro ao enviar dados:', error);
+        return false;
+    }
+}
+
+async function criarBinNuvem(dados) {
+    try {
+        // Primeiro, criar o bin
+        const response = await fetch('https://api.jsonbin.io/v3/b', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': SYNC_CONFIG.jsonBinKey
+            },
+            body: JSON.stringify(dados)
+        });
+        
+        if (!response.ok) {
+            console.error('❌ Erro ao criar bin:', response.status);
+            return false;
+        }
+        
+        const result = await response.json();
+        const newBinId = result.metadata?.id;
+        
+        if (newBinId) {
+            console.log('✅ Bin criado com sucesso! ID:', newBinId);
+            // Salvar o novo ID para uso futuro
+            SYNC_CONFIG.binId = newBinId;
+            localStorage.setItem('agenda_bin_id', newBinId);
+            localStorage.setItem('agenda_version', dados.version);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('❌ Erro ao criar bin:', error);
+        return false;
+    }
+}
+
+async function sincronizarNuvem() {
+    if (isSyncing) return;
+    isSyncing = true;
+    setSyncStatus('syncing', '<i class="fas fa-spinner fa-spin"></i> Sincronizando...');
+
+    try {
+        // Tentar recuperar o bin ID salvo
+        const savedBinId = localStorage.getItem('agenda_bin_id');
+        if (savedBinId && SYNC_CONFIG.binId === '66f8b4f4ad19ca34f8b6c6b6') {
+            SYNC_CONFIG.binId = savedBinId;
+        }
+        
+        const dadosNuvem = await buscarDadosNuvem();
+        
+        if (dadosNuvem && dadosNuvem.events && dadosNuvem.events.length > 0) {
+            const versaoLocal = localStorage.getItem('agenda_version') || '0';
+            const versaoNuvem = dadosNuvem.version || '0';
+            
+            if (versaoNuvem !== versaoLocal) {
+                const result = confirm('📥 Há atualizações na nuvem. Deseja baixar os dados mais recentes?\n\nClique em "OK" para baixar (perderá alterações locais não salvas) ou "Cancelar" para manter local e enviar.');
+                if (result) {
+                    events = dadosNuvem.events;
+                    nextId = dadosNuvem.nextId || events.length + 1;
+                    salvarEventosLocal();
+                    localStorage.setItem('agenda_version', versaoNuvem);
+                    renderCalendar();
+                    if (selectedDate) renderDayEvents(selectedDate);
+                    atualizarFinanceiro();
                     setSyncStatus('synced', '<i class="fas fa-cloud"></i> Sincronizado');
-                    showToast('✅ Já está sincronizado!');
+                    showToast('✅ Dados baixados da nuvem!');
+                } else {
+                    const enviado = await enviarDadosNuvem();
+                    if (enviado) {
+                        setSyncStatus('synced', '<i class="fas fa-cloud"></i> Sincronizado');
+                        showToast('✅ Dados enviados para nuvem!');
+                    } else {
+                        setSyncStatus('error', '<i class="fas fa-exclamation-triangle"></i> Erro ao enviar');
+                        showToast('⚠️ Erro ao enviar para nuvem. Dados salvos localmente.');
+                    }
                 }
             } else {
-                const enviado = await enviarDadosNuvem();
-                if (enviado) {
-                    setSyncStatus('synced', '<i class="fas fa-cloud"></i> Sincronizado');
-                    showToast('✅ Dados enviados para nuvem!');
-                } else {
-                    setSyncStatus('error', '<i class="fas fa-exclamation-triangle"></i> Erro ao enviar');
-                    showToast('⚠️ Erro ao enviar para nuvem');
-                }
+                setSyncStatus('synced', '<i class="fas fa-cloud"></i> Sincronizado');
+                showToast('✅ Já está sincronizado!');
             }
-        } catch (error) {
-            console.error('Erro na sincronização:', error);
-            setSyncStatus('error', '<i class="fas fa-exclamation-triangle"></i> Erro');
-            showToast('⚠️ Erro ao sincronizar');
+        } else {
+            // Não há dados na nuvem, enviar os locais
+            const enviado = await enviarDadosNuvem();
+            if (enviado) {
+                setSyncStatus('synced', '<i class="fas fa-cloud"></i> Sincronizado');
+                showToast('✅ Dados enviados para nuvem!');
+            } else {
+                setSyncStatus('error', '<i class="fas fa-exclamation-triangle"></i> Erro ao enviar');
+                showToast('⚠️ Erro ao enviar para nuvem. Dados salvos localmente.');
+            }
         }
-        isSyncing = false;
+    } catch (error) {
+        console.error('❌ Erro na sincronização:', error);
+        setSyncStatus('error', '<i class="fas fa-exclamation-triangle"></i> Erro');
+        showToast('⚠️ Erro ao sincronizar. Dados salvos localmente.');
     }
-
+    isSyncing = false;
+}
     // ============================================================
     // EXPORT / IMPORT BACKUP
     // ============================================================
