@@ -1,19 +1,8 @@
 const SYNC_CONFIG = {
     useJsonBin: true,
-    // ⚠️ IMPORTANTE: Substitua com seus dados reais
-    // API Key (X-Master-Key) - encontrada em Account > API Keys
     jsonBinKey: '$2a$10$PpKSqwwVFrJrZF8njCvPtOIbqETvjIvkjGBYu97curmyuop7iEBle',
-    // Bin ID - está na URL: https://jsonbin.io/v3/b/[AQUI_O_BIN_ID]
-    binId: '6a3abba2da38895dfef2cd4d' // Substitua pelo ID real do seu bin
+    // Bin para os eventos da agenda
+    binId: '6a3abba2da38895dfef2cd4d',
+    // Bin para os usuários (crie um novo no JSONBin)
+    usersBinId: '6a3ac586da38895dfef30582' //
 };
-// O sistema faz isso automaticamente
-fetch('https://api.jsonbin.io/v3/b/6a3abba2da38895dfef2cd4d', {
-    headers: {
-        'X-Master-Key': '$2a$10$PpKSqwwVFrJrZF8njCvPtOIbqETvjIvkjGBYu97curmyuop7iEBle',
-        'Content-Type': 'application/json'
-    }
-})
-// Exportar para uso em outros arquivos
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SYNC_CONFIG;
-}

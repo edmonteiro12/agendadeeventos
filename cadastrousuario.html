@@ -536,43 +536,28 @@
 
     let editingUser = null;
 
+       // CARREGAR USUÁRIOS (do localStorage)
     // ============================================================
-    // FUNÇÕES DE USUÁRIOS
-    // ============================================================
-    function carregarUsuarios() {
-        try {
-            const data = localStorage.getItem('agenda_users');
-            if (data) {
-                let users = JSON.parse(data);
-                // Garantir que todos os usuários tenham o campo 'active'
-                users = users.map(u => {
-                    if (u.active === undefined) {
-                        u.active = true;
-                    }
-                    return u;
-                });
-                // Garantir que o admin master existe e está ativo
-                const adminExists = users.find(u => u.username === MASTER_ADMIN);
-                if (!adminExists) {
-                    users.push({ username: MASTER_ADMIN, password: ADMIN_PASS, active: true });
-                } else {
-                    // Garantir que o admin master está ativo
-                    adminExists.active = true;
-                }
-                salvarUsuarios(users);
-                return users;
-            } else {
-                const defaultUsers = [
-                    { username: 'admin', password: '123', active: true },
-                    { username: MASTER_ADMIN, password: ADMIN_PASS, active: true }
-                ];
-                salvarUsuarios(defaultUsers);
-                return defaultUsers;
-            }
-        } catch (e) {
-            return [{ username: 'admin', password: '123', active: true }, { username: MASTER_ADMIN, password: ADMIN_PASS, active: true }];
+   // ANTES (apenas local)
+function carregarUsuarios() {
+    try {
+        const data = localStorage.getItem('agenda_users');
+        if (data) {
+            users = JSON.parse(data);
+        } else {
+            users = [{ username: 'edmonteiro', password: '155145' }];
+            localStorage.setItem('agenda_users', JSON.stringify(users));
         }
+    } catch (e) {
+        users = [{ username: 'edmonteiro', password: '155145' }];
     }
+}
+
+// DEPOIS (nuvem + local)
+async function carregarUsuarios() {
+    users = await carregarUsuariosNuvem();
+}
+
 
     function salvarUsuarios(users) {
         try {
@@ -844,7 +829,77 @@
             showMessage(result.message, 'error');
         }
     }
+// ============================================================
+// USUÁRIOS NA NUVEM (JSONBin)
+// ============================================================
 
+async function carregarUsuariosNuvem() {
+    try {
+        if (!SYNC_CONFIG.usersBinId) return carregarUsuariosLocal();
+        
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${SYNC_CONFIG.usersBinId}/latest`, {
+            headers: {
+                'X-Master-Key': SYNC_CONFIG.jsonBinKey,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const users = data.record.users || [];
+            // Salvar localmente como cache
+            localStorage.setItem('agenda_users', JSON.stringify(users));
+            return users;
+        }
+    } catch (e) {
+        console.warn('Erro ao carregar usuários da nuvem:', e);
+    }
+    return carregarUsuariosLocal();
+}
+
+async function salvarUsuariosNuvem(users) {
+    try {
+        if (!SYNC_CONFIG.usersBinId) return salvarUsuariosLocal(users);
+        
+        const dados = {
+            users: users,
+            version: Date.now().toString(),
+            updatedAt: new Date().toISOString()
+        };
+        
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${SYNC_CONFIG.usersBinId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': SYNC_CONFIG.jsonBinKey
+            },
+            body: JSON.stringify(dados)
+        });
+        
+        if (response.ok) {
+            localStorage.setItem('agenda_users', JSON.stringify(users));
+            return true;
+        }
+    } catch (e) {
+        console.warn('Erro ao salvar usuários na nuvem:', e);
+    }
+    return false;
+}
+
+// Fallback para localStorage
+function carregarUsuariosLocal() {
+    try {
+        const data = localStorage.getItem('agenda_users');
+        if (data) return JSON.parse(data);
+    } catch (e) {}
+    return [{ username: 'admin', password: '123', active: true }, { username: 'edmonteiro', password: '155145', active: true }];
+}
+
+function salvarUsuariosLocal(users) {
+    try {
+        localStorage.setItem('agenda_users', JSON.stringify(users));
+    } catch (e) {}
+}
     // ============================================================
     // EVENT LISTENERS
     // ============================================================
